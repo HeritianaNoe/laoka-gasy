@@ -1,0 +1,37 @@
+@import "tailwindcss";
+
+@theme {
+  --color-rice: #fbf6ec;
+  --color-paper: #f3ead8;
+  --color-clay: #c2532d;
+  --color-clay-dark: #9c3f1f;
+  --color-ravitoto: #2f4a2a;
+  --color-ravitoto-light: #5d7a4f;
+  --color-ink: #2a1d14;
+  --color-muted: #7a6a5a;
+  --color-sakay: #e8a33a;
+  --font-display: var(--font-fraunces), Georgia, serif;
+  --font-sans: var(--font-outfit), system-ui, sans-serif;
+}
+
+html {
+  background: var(--color-rice);
+  color: var(--color-ink);
+}
+
+body {
+  font-family: var(--font-sans);
+  /* subtle woven-raffia texture */
+  background-image:
+    repeating-linear-gradient(45deg, rgb(194 83 45 / 0.025) 0 2px, transparent 2px 14px),
+    repeating-linear-gradient(-45deg, rgb(47 74 42 / 0.025) 0 2px, transparent 2px 14px);
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+
+.rise {
+  animation: rise 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}

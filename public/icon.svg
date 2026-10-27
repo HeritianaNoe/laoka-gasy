@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#c2532d"/>
+  <circle cx="256" cy="256" r="196" fill="none" stroke="#fbf6ec" stroke-opacity="0.18" stroke-width="10" stroke-dasharray="4 22" stroke-linecap="round"/>
+  <!-- steam -->
+  <g fill="none" stroke="#fbf6ec" stroke-width="16" stroke-linecap="round" opacity="0.85">
+    <path d="M206 92c-18 22 18 38 0 62"/>
+    <path d="M256 78c-18 22 18 38 0 62"/>
+    <path d="M306 92c-18 22 18 38 0 62"/>
+  </g>
+  <!-- rice mound -->
+  <path d="M120 270c10-62 66-102 136-102s126 40 136 102z" fill="#fbf6ec"/>
+  <!-- ravitoto leaves -->
+  <path d="M190 262c-6-40 22-70 62-72-2 40-26 68-62 72z" fill="#5d7a4f"/>
+  <path d="M262 262c4-44 38-72 82-66-8 40-40 66-82 66z" fill="#2f4a2a"/>
+  <path d="M228 264c0-30 14-52 34-62" fill="none" stroke="#e8a33a" stroke-width="8" stroke-linecap="round"/>
+  <!-- bowl -->
+  <path d="M96 262h320c0 88-72 156-160 156S96 350 96 262z" fill="#fbf6ec"/>
+  <path d="M96 262h320c-2 14-5 26-10 38H106c-5-12-8-24-10-38z" fill="#e8a33a"/>
+  <rect x="196" y="410" width="120" height="22" rx="11" fill="#9c3f1f"/>
+</svg>
