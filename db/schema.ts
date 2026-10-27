@@ -26,6 +26,17 @@ export const fady = pgTable("fady", {
   name: text().notNull(),
 });
 
+// Users: "admin" can manage everything from /admin, "user" is reserved for later
+export const users = pgTable("users", {
+  id: serial().primaryKey(),
+  name: text().notNull(),
+  email: text().notNull().unique(),
+  passwordHash: text("password_hash").notNull(),
+  role: text({ enum: ["admin", "user"] }).notNull().default("user"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export type Category = typeof categories.$inferSelect;
 export type Food = typeof foods.$inferSelect;
 export type Fady = typeof fady.$inferSelect;
+export type User = typeof users.$inferSelect;

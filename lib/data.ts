@@ -1,6 +1,6 @@
-import { asc, desc, eq } from "drizzle-orm";
+import { asc, count, desc, eq } from "drizzle-orm";
 import { db } from "@/db";
-import { categories, fady, foods } from "@/db/schema";
+import { categories, fady, foods, users } from "@/db/schema";
 
 // Read-side queries, equivalent to the Room DAOs of the Android app
 
@@ -29,4 +29,40 @@ export function getFadyList() {
 export function matchFady(food: { name: string; description: string }, fadyNames: string[]) {
   const text = `${food.name} ${food.description}`.toLowerCase();
   return fadyNames.filter((n) => n.trim() && text.includes(n.trim().toLowerCase()));
+}
+
+// Sokajy miaraka amin'ny isan'ny laoka ao aminy (ampiasain'ny dashboard admin)
+export function getCategoriesWithCount() {
+  return db
+    .select({ id: categories.id, name: categories.name, photo: categories.photo, foodCount: count(foods.id) })
+    .from(categories)
+    .leftJoin(foods, eq(foods.categoryId, categories.id))
+    .groupBy(categories.id)
+    .orderBy(asc(categories.id));
+}
+
+// Laoka rehetra miaraka amin'ny anaran'ny sokajy (dashboard admin)
+export function getFoodsForAdmin() {
+  return db
+    .select({
+      id: foods.id,
+      name: foods.name,
+      description: foods.description,
+      photo: foods.photo,
+      heart: foods.heart,
+      rating: foods.rating,
+      categoryId: foods.categoryId,
+      categoryName: categories.name,
+    })
+    .from(foods)
+    .leftJoin(categories, eq(categories.id, foods.categoryId))
+    .orderBy(asc(foods.name));
+}
+
+// Tsy mandefa ny passwordHash mankany amin'ny client mihitsy
+export function getUsersForAdmin() {
+  return db
+    .select({ id: users.id, name: users.name, email: users.email, role: users.role, createdAt: users.createdAt })
+    .from(users)
+    .orderBy(asc(users.id));
 }
