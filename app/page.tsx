@@ -31,7 +31,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
             Inona no laoka <em className="text-sakay">anio</em>?
           </h1>
           <p className="rise mt-4 text-lg text-rice/85" style={{ animationDelay: "160ms" }}>
-            Tehirizo ireo laoka tianao, omeo kintana, ary aza atao fady.
+            Tahirio ireo laoka tianao, omeo kintana, ary avelao ny Laoka hisafidy ho anao — tsy misy fady.
           </p>
         </div>
       </section>

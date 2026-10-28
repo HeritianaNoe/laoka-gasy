@@ -1,21 +1,19 @@
 "use server";
 
-import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { db } from "@/db";
-import { fady, foods } from "@/db/schema";
+import { prisma } from "@/lib/prisma";
 import { uploadPhoto } from "@/lib/storage";
 
 export type FormState = { ok: boolean; message: string } | null;
 
 export async function toggleHeart(id: number, heart: boolean) {
-  await db.update(foods).set({ heart }).where(eq(foods.id, id));
+  await prisma.food.update({ where: { id }, data: { heart } });
   revalidatePath("/", "layout");
 }
 
 export async function setRating(id: number, rating: number) {
   const value = Math.max(0, Math.min(5, Math.round(rating)));
-  await db.update(foods).set({ rating: value }).where(eq(foods.id, id));
+  await prisma.food.update({ where: { id }, data: { rating: value } });
   revalidatePath("/", "layout");
 }
 
@@ -37,7 +35,7 @@ export async function addFood(_prev: FormState, formData: FormData): Promise<For
     return { ok: false, message: "Tsy nety ny fampiraisana sary. Andramo indray." };
   }
 
-  await db.insert(foods).values({ name, description, categoryId, photo: photoUrl });
+  await prisma.food.create({ data: { name, description, categoryId, photo: photoUrl } });
   revalidatePath("/", "layout");
   return { ok: true, message: "Voatahiry ny laoka nampidirinao!" };
 }
@@ -45,14 +43,6 @@ export async function addFood(_prev: FormState, formData: FormData): Promise<For
 export async function addFady(name: string) {
   const value = name.trim();
   if (!value) return;
-  await db.insert(fady).values({ name: value });
+  await prisma.fady.create({ data: { name: value } });
   revalidatePath("/", "layout");
-}
-
-export async function deleteFood(id: number) {
-  const [removed] = await db.delete(foods).where(eq(foods.id, id)).returning();
-  // deletePhoto dia no-op (data URL ao anaty DB), fa atao ihany mba hitovy amin'ny admin
-  // (raha te-hanafatra azy dia import { deletePhoto } from "@/lib/storage")
-  revalidatePath("/", "layout");
-  return removed;
 }

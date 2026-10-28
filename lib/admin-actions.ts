@@ -1,10 +1,8 @@
 "use server";
 
-import { and, count, eq, ne } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { db } from "@/db";
-import { categories, fady, foods, users } from "@/db/schema";
+import { prisma } from "@/lib/prisma";
 import { createSession, destroySession, hashPassword, requireAdmin, requireUser, safeEqual, verifyPassword } from "@/lib/auth";
 import { deletePhoto, uploadPhoto } from "@/lib/storage";
 
@@ -21,14 +19,14 @@ export async function login(_prev: FormState, formData: FormData): Promise<FormS
   if (!email || !password) return BAD_LOGIN;
 
   // Admin voalohany: noforonina avy amin'ny ADMIN_EMAIL / ADMIN_PASSWORD raha mbola tsy misy admin
-  const [existingAdmin] = await db.select({ id: users.id }).from(users).where(eq(users.role, "admin")).limit(1);
+  const existingAdmin = await prisma.user.findFirst({ where: { role: "admin" }, select: { id: true } });
   const envEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
   const envPassword = process.env.ADMIN_PASSWORD;
   if (!existingAdmin && envEmail && envPassword && safeEqual(email, envEmail) && safeEqual(password, envPassword)) {
-    await db.insert(users).values({ name: "Admin", email, passwordHash: await hashPassword(password), role: "admin" });
+    await prisma.user.create({ data: { name: "Admin", email, passwordHash: await hashPassword(password), role: "admin" } });
   }
 
-  const [user] = await db.select().from(users).where(eq(users.email, email));
+  const user = await prisma.user.findUnique({ where: { email } });
   if (!user || !(await verifyPassword(password, user.passwordHash))) return BAD_LOGIN;
 
   await createSession(user.id);
@@ -82,7 +80,7 @@ export async function createCategory(_prev: FormState, formData: FormData): Prom
   const data = await readCategoryForm(formData);
   if ("error" in data) return { ok: false, message: data.error };
   try {
-    await db.insert(categories).values(data);
+    await prisma.category.create({ data });
   } catch (e) {
     console.error("[createCategory]", e);
     return { ok: false, message: "Tsy nety ny firaketana. Jereo ny DATABASE_URL." };
@@ -93,12 +91,12 @@ export async function createCategory(_prev: FormState, formData: FormData): Prom
 
 export async function updateCategory(id: number, _prev: FormState, formData: FormData): Promise<FormState> {
   await requireUser();
-  const [current] = await db.select().from(categories).where(eq(categories.id, id));
+  const current = await prisma.category.findUnique({ where: { id } });
   if (!current) return { ok: false, message: "Tsy hita ny sokajy." };
   const data = await readCategoryForm(formData, current.photo);
   if ("error" in data) return { ok: false, message: data.error };
   try {
-    await db.update(categories).set(data).where(eq(categories.id, id));
+    await prisma.category.update({ where: { id }, data });
   } catch (e) {
     console.error("[updateCategory]", e);
     return { ok: false, message: "Tsy nety ny firaketana. Jereo ny DATABASE_URL." };
@@ -110,7 +108,7 @@ export async function updateCategory(id: number, _prev: FormState, formData: For
 
 export async function deleteCategory(id: number) {
   await requireAdmin();
-  const [removed] = await db.delete(categories).where(eq(categories.id, id)).returning();
+  const removed = await prisma.category.delete({ where: { id } }).catch(() => null);
   await dropPhoto(removed?.photo);
   refresh();
 }
@@ -122,7 +120,7 @@ export async function createFady(_prev: FormState, formData: FormData): Promise<
   const name = String(formData.get("name") ?? "").trim();
   if (!name) return { ok: false, message: "Soraty ny fady." };
   try {
-    await db.insert(fady).values({ name });
+    await prisma.fady.create({ data: { name } });
   } catch (e) {
     console.error("[createFady]", e);
     return { ok: false, message: "Tsy nety ny firaketana. Jereo ny DATABASE_URL." };
@@ -136,7 +134,7 @@ export async function updateFady(id: number, _prev: FormState, formData: FormDat
   const name = String(formData.get("name") ?? "").trim();
   if (!name) return { ok: false, message: "Soraty ny fady." };
   try {
-    await db.update(fady).set({ name }).where(eq(fady.id, id));
+    await prisma.fady.update({ where: { id }, data: { name } });
   } catch (e) {
     console.error("[updateFady]", e);
     return { ok: false, message: "Tsy nety ny firaketana. Jereo ny DATABASE_URL." };
@@ -148,7 +146,7 @@ export async function updateFady(id: number, _prev: FormState, formData: FormDat
 export async function deleteFady(id: number): Promise<FormState> {
   await requireAdmin();
   try {
-    await db.delete(fady).where(eq(fady.id, id));
+    await prisma.fady.delete({ where: { id } });
   } catch (e) {
     console.error("[deleteFady]", e);
     return { ok: false, message: "Tsy nety ny famafana." };
@@ -181,7 +179,7 @@ export async function createFood(_prev: FormState, formData: FormData): Promise<
   const data = await readFoodForm(formData);
   if ("error" in data) return { ok: false, message: data.error };
   try {
-    await db.insert(foods).values(data);
+    await prisma.food.create({ data });
   } catch (e) {
     console.error("[createFood]", e);
     return { ok: false, message: "Tsy nety ny firaketana. Jereo ny DATABASE_URL." };
@@ -192,12 +190,12 @@ export async function createFood(_prev: FormState, formData: FormData): Promise<
 
 export async function updateFood(id: number, _prev: FormState, formData: FormData): Promise<FormState> {
   await requireUser();
-  const [current] = await db.select().from(foods).where(eq(foods.id, id));
+  const current = await prisma.food.findUnique({ where: { id } });
   if (!current) return { ok: false, message: "Tsy hita ny laoka." };
   const data = await readFoodForm(formData, current.photo);
   if ("error" in data) return { ok: false, message: data.error };
   try {
-    await db.update(foods).set(data).where(eq(foods.id, id));
+    await prisma.food.update({ where: { id }, data });
   } catch (e) {
     console.error("[updateFood]", e);
     return { ok: false, message: "Tsy nety ny firaketana. Jereo ny DATABASE_URL." };
@@ -209,14 +207,14 @@ export async function updateFood(id: number, _prev: FormState, formData: FormDat
 
 export async function removeFood(id: number) {
   await requireAdmin();
-  const [removed] = await db.delete(foods).where(eq(foods.id, id)).returning();
+  const removed = await prisma.food.delete({ where: { id } }).catch(() => null);
   await dropPhoto(removed?.photo);
   refresh();
 }
 
 // ---------- CRUD Mpampiasa ----------
 
-const adminCount = async () => (await db.select({ n: count() }).from(users).where(eq(users.role, "admin")))[0].n;
+const adminCount = () => prisma.user.count({ where: { role: "admin" } });
 
 export async function createUser(_prev: FormState, formData: FormData): Promise<FormState> {
   await requireAdmin();
@@ -226,16 +224,16 @@ export async function createUser(_prev: FormState, formData: FormData): Promise<
   const role = formData.get("role") === "admin" ? "admin" : "user";
   if (!name || !email.includes("@")) return { ok: false, message: "Fenoy ny anarana sy ny mailaka marina." };
   if (password.length < 8) return { ok: false, message: "8 litera farafahakeliny ny teny miafina." };
-  const [dup] = await db.select({ id: users.id }).from(users).where(eq(users.email, email));
+  const dup = await prisma.user.findUnique({ where: { email }, select: { id: true } });
   if (dup) return { ok: false, message: "Efa misy mampiasa io mailaka io." };
-  await db.insert(users).values({ name, email, role, passwordHash: await hashPassword(password) });
+  await prisma.user.create({ data: { name, email, role, passwordHash: await hashPassword(password) } });
   refresh();
   return { ok: true, message: `Voasoratra i ${name}.` };
 }
 
 export async function updateUser(id: number, _prev: FormState, formData: FormData): Promise<FormState> {
   const me = await requireAdmin();
-  const [target] = await db.select().from(users).where(eq(users.id, id));
+  const target = await prisma.user.findUnique({ where: { id } });
   if (!target) return { ok: false, message: "Tsy hita ny mpampiasa." };
 
   const name = String(formData.get("name") ?? "").trim();
@@ -244,17 +242,17 @@ export async function updateUser(id: number, _prev: FormState, formData: FormDat
   const role = formData.get("role") === "admin" ? "admin" : "user";
   if (!name || !email.includes("@")) return { ok: false, message: "Fenoy ny anarana sy ny mailaka marina." };
   if (password && password.length < 8) return { ok: false, message: "8 litera farafahakeliny ny teny miafina." };
-  const [dup] = await db.select({ id: users.id }).from(users).where(and(eq(users.email, email), ne(users.id, id)));
+  const dup = await prisma.user.findFirst({ where: { email, NOT: { id } }, select: { id: true } });
   if (dup) return { ok: false, message: "Efa misy mampiasa io mailaka io." };
   if (target.role === "admin" && role !== "admin") {
     if (me.id === id) return { ok: false, message: "Tsy azonao esorina ny alalana admin-nao manokana." };
     if ((await adminCount()) <= 1) return { ok: false, message: "Tsy maintsy misy admin iray farafahakeliny." };
   }
 
-  await db
-    .update(users)
-    .set({ name, email, role, ...(password ? { passwordHash: await hashPassword(password) } : {}) })
-    .where(eq(users.id, id));
+  await prisma.user.update({
+    where: { id },
+    data: { name, email, role, ...(password ? { passwordHash: await hashPassword(password) } : {}) },
+  });
   refresh();
   return { ok: true, message: "Voatahiry." };
 }
@@ -262,10 +260,10 @@ export async function updateUser(id: number, _prev: FormState, formData: FormDat
 export async function deleteUser(id: number): Promise<FormState> {
   const me = await requireAdmin();
   if (me.id === id) return { ok: false, message: "Tsy azonao fafana ny kaonty anananao." };
-  const [target] = await db.select().from(users).where(eq(users.id, id));
+  const target = await prisma.user.findUnique({ where: { id } });
   if (target?.role === "admin" && (await adminCount()) <= 1)
     return { ok: false, message: "Tsy maintsy misy admin iray farafahakeliny." };
-  await db.delete(users).where(eq(users.id, id));
+  await prisma.user.deleteMany({ where: { id } });
   refresh();
   return { ok: true, message: "Voafafa." };
 }

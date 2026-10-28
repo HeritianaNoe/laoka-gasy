@@ -3,7 +3,7 @@
 import { useActionState, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Camera, CheckCircle2, Loader2, TriangleAlert } from "lucide-react";
-import type { Category } from "@/db/schema";
+import type { Category } from "@prisma/client";
 import { addFood, type FormState } from "@/lib/actions";
 
 // Downscale large camera photos in the browser so uploads stay small

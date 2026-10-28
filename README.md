@@ -37,7 +37,7 @@ Voaaro ao amin'ny server ihany koa ireo fepetra ireo (`requireUser()` / `require
 
 - **Next.js 15** (App Router, Server Components, Server Actions) + **React 19**
 - **Tailwind CSS v4**, icônes **lucide-react**
-- **PostgreSQL** amin'ny alalan'i **Drizzle ORM** + `pg` (`DATABASE_URL`)
+- **PostgreSQL** amin'ny alalan'i **Prisma ORM** (`DATABASE_URL`)
 - Fanamarinana: cookie session sonia (HMAC) + teny miafina `scrypt`
 - Sary: lasa *data URL* ao anaty base de données (tsy mila serivisy ivelany). Zaraina kely ao amin'ny browser alohan'ny hampiakarana.
 
@@ -51,17 +51,18 @@ Voaaro ao amin'ny server ihany koa ireo fepetra ireo (`requireUser()` / `require
 1. **Alaivo ny code** ary apetraho ny fiankinan-doha:
 
    ```bash
+   git clone <url-ny-repo>
    cd laoka-gasy
    npm install
    ```
 
-2. **Mamorona ny `.env.local`** avy amin'ny modely:
+2. **Mamorona ny `.env`** avy amin'ny modely:
 
    ```bash
-   cp .env.example .env.local
+   cp .env.example .env
    ```
 
-   Ovay ireo sanda:
+   Ovay ireo sanda (ao amin'ny `.env` no ilain'ny Prisma CLI hamaky azy):
 
    ```env
    DATABASE_URL="postgresql://USER:PASSWORD@localhost:5432/laoka_gasy"
@@ -77,12 +78,10 @@ Voaaro ao amin'ny server ihany koa ireo fepetra ireo (`requireUser()` / `require
    npm run db:push
    ```
 
-   *Safidy hafa:* alefaso ao amin'ny DB ny rakitra SQL ao amin'ny `drizzle/` (`0000_init.sql`).
-
 4. **Ampidiro ny angona voalohany** (sokajy 8, laoka 8, fady "Osy") — tsy ataon'ny `db:push` ity:
 
    ```bash
-   psql "$DATABASE_URL" -f drizzle/0001_seed.sql
+   npm run db:seed
    ```
 
 5. **Alefaso ny app:**
@@ -96,27 +95,24 @@ Voaaro ao amin'ny server ihany koa ireo fepetra ireo (`requireUser()` / `require
 
 ### Fidirana admin voalohany
 
-Tsy mila mamorona admin amin'ny tanana. Rehefa tsy mbola misy admin ao amin'ny DB, ny fidirana voalohany amin'ny `ADMIN_EMAIL` + `ADMIN_PASSWORD` avy ao amin'ny `.env.local` dia mamorona ny kaonty admin ho azy. Avy eo, ao amin'ny tab **Mpampiasa** no ahafahana mamorona admin na `user` hafa (8 litera farafahakeliny ny teny miafina).
+Tsy mila mamorona admin amin'ny tanana. Rehefa tsy mbola misy admin ao amin'ny DB, ny fidirana voalohany amin'ny `ADMIN_EMAIL` + `ADMIN_PASSWORD` ao amin'ny `.env` dia mamorona ny kaonty admin ho azy. Avy eo, ao amin'ny tab **Mpampiasa** no ahafahana mamorona admin na `user` hafa (8 litera farafahakeliny ny teny miafina).
 
 ## Script npm
 
 | Baiko | Asa |
 | --- | --- |
 | `npm run dev` | Mandefa ny dev server |
-| `npm run build` | Manamboatra ho an'ny production |
+| `npm run build` | `db push` + `prisma generate` + `next build` (ho an'ny production) |
 | `npm run start` | Mandefa ny build production |
-| `npm run db:push` | Manosika ny schema mankany amin'ny DB (prototype) |
-| `npm run db:generate` | Mamorona fifindra-monina SQL vaovao avy amin'ny `db/schema.ts` |
-| `npm run db:migrate` | Mampihatra ny fifindra-monina |
-| `npm run db:studio` | Mamoha Drizzle Studio hijerena ny angona |
+| `npm run db:push` | Manosika ny `prisma/schema.prisma` mankany amin'ny DB |
+| `npm run db:seed` | Mampiditra ny angona voalohany (sokajy, laoka, fady) |
+| `npm run db:studio` | Mamoha Prisma Studio hijerena ny angona |
 
-Rehefa manova ny `db/schema.ts`:
+Rehefa manova ny `prisma/schema.prisma`:
 
 ```bash
-npx drizzle-kit generate --name famaritana-ny-fiovana
-npx drizzle-kit push        # prototype
-# na
-npx drizzle-kit migrate
+npm run db:push
+npx prisma generate
 ```
 
 ## Firafitry ny tetikasa
@@ -132,13 +128,14 @@ app/                    Làlana (Server Components, force-dynamic)
   admin/(panel)/        Dashboard: sokajy, laoka, fady, mpampiasa
 components/             Component client (nav, food-browser, pagination, form, admin/*)
 lib/
+  prisma.ts             PrismaClient (mitady ny URL PostgreSQL ho azy)
   data.ts               Query famakiana
   actions.ts            Server Actions public (fo, kintana, hampiditra laoka, fady)
   admin-actions.ts      Server Actions dashboard (CRUD + fidirana)
   auth.ts               Session cookie + scrypt + requireUser/requireAdmin
   storage.ts            Sary → data URL
-db/                     Schema Drizzle + fifandraisana `pg`
-drizzle/                SQL: 0000_init.sql, 0001_seed.sql
+prisma/                 schema.prisma + seed.ts
+scripts/                db-env.mjs, db-push.mjs (alefa ao anaty `npm run build`)
 public/img/             Sary fampiasaina amin'ny seed
 ```
 
@@ -146,13 +143,19 @@ public/img/             Sary fampiasaina amin'ny seed
 
 1. Ampifandraiso ny repo.
 2. Apetraho ao amin'ny tontolon'ny host ireo **sanda 4** (`DATABASE_URL`, `SESSION_SECRET`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`).
-3. Baiko build: `npm run build`.
-4. Aorian'ny deploy voalohany, alefaso indray mandeha amin'ny DB production ny tabilao (sy ny seed raha tianao):
+3. Baiko build: `npm run build` (mamorona/manavao ny tabilao ho azy amin'ny `prisma db push`, dia `prisma generate`, dia `next build`).
+4. Raha tianao ny angona voalohany, alefaso indray mandeha amin'ny DB production:
 
    ```bash
-   DATABASE_URL="url-production" npm run db:push
-   psql "url-production" -f drizzle/0001_seed.sql
+   DATABASE_URL="url-production" npm run db:seed
    ```
+
+## Fiarovana sy fanamarihana
+
+- **Aza alefa any GitHub ny `.env`.** Voasivana ao amin'ny `.gitignore` izy (ary `.env*` rehetra afa-tsy `.env.example`). Ao amin'ny `.env.example` dia sanda modely ihany no apetraka, tsy sekreta tena izy.
+- Ovay ny `ADMIN_PASSWORD` aorian'ny fidirana voalohany, ary ampiasao ny `SESSION_SECRET` lava sy tsy azo vinavinaina. Ilaina ao amin'ny production ny `SESSION_SECRET`, raha tsy izany dia hanary hadisoana ny fanamarinana.
+- Sary: fetra **3 MB** ao amin'ny dashboard (4 MB ny fetran'ny Server Action).
+- Tsy misy package manokana ho an'ny Netlify na API manokana: azo alefa na aiza na aiza.
 
 ## Mpamorona
 

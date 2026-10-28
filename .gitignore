@@ -33,7 +33,7 @@ yarn-error.log*
 # ---- Test / coverage ----
 /coverage
 
-# ---- Drizzle Studio / fichier local ----
+# ---- Fichier local ----
 *.sqlite
 *.sqlite3
 

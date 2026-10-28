@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Sokajy (categories): Henakisoa, Henomby, Akoho...
+model Category {
+  id    Int    @id @default(autoincrement())
+  name  String
+  photo String @default("")
+  foods Food[]
+
+  @@map("categories")
+}
+
+// Laoka (dishes)
+model Food {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String   @default("")
+  // Static asset path ("/img/ravitoto.png") na data: URL ho an'ny sary nampidirina
+  photo       String   @default("")
+  heart       Boolean  @default(false)
+  rating      Int      @default(0)
+  categoryId  Int?     @map("category_id")
+  category    Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@map("foods")
+}
+
+// Fady (zavatra tsy hohanina)
+model Fady {
+  id   Int    @id @default(autoincrement())
+  name String
+
+  @@map("fady")
+}
+
+// Mpampiasa: role = "admin" | "user"
+model User {
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  role         String   @default("user")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@map("users")
+}

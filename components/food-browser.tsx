@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Ban, Dices, Search } from "lucide-react";
-import type { Category, Food } from "@/db/schema";
+import type { Category, Food } from "@prisma/client";
 import { Pagination } from "./pagination";
 import { HeartButton, StarRating } from "./rating";
 

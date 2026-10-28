@@ -1,10 +1,9 @@
 import { createHmac, randomBytes, scrypt as scryptCb, timingSafeEqual } from "node:crypto";
 import { promisify } from "node:util";
-import { eq } from "drizzle-orm";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { db } from "@/db";
-import { users, type User } from "@/db/schema";
+import type { User } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 
 const scrypt = promisify(scryptCb) as (pw: string, salt: Buffer, len: number) => Promise<Buffer>;
 
@@ -58,8 +57,9 @@ export async function getCurrentUser(): Promise<User | null> {
   if (!token) return null;
   const [id, exp, sig] = token.split(".");
   if (!id || !exp || !sig || !safeEqual(sig, sign(`${id}.${exp}`)) || Number(exp) < Date.now()) return null;
-  const [user] = await db.select().from(users).where(eq(users.id, Number(id)));
-  return user ?? null;
+  const userId = Number(id);
+  if (!Number.isInteger(userId)) return null;
+  return prisma.user.findUnique({ where: { id: userId } });
 }
 
 // Mpampiasa rehetra miditra (admin na user): afaka mijery sy mamorona/manova ao amin'ny dashboard.

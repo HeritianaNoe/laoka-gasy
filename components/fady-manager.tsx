@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { Ban, Plus } from "lucide-react";
-import type { Fady } from "@/db/schema";
+import type { Fady } from "@prisma/client";
 import { addFady } from "@/lib/actions";
 
 export function FadyManager({ list }: { list: Fady[] }) {

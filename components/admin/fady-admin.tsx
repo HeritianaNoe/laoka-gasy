@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useRef, useState, useTransition } from "react";
 import { Ban, Check, Loader2, Pencil, Plus, Trash2, X } from "lucide-react";
-import type { Fady } from "@/db/schema";
+import type { Fady } from "@prisma/client";
 import { createFady, deleteFady, updateFady } from "@/lib/admin-actions";
 import { field, IconBtn, primaryBtn, Status } from "./ui";
 

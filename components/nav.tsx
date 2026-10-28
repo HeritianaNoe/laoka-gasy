@@ -27,7 +27,7 @@ export function Header() {
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
         <Link href="/" className="flex items-baseline gap-2">
           <span className="font-display text-3xl font-semibold tracking-tight text-clay">Laoka</span>
-          <span className="hidden text-xs uppercase tracking-[0.2em] text-muted sm:inline">sakafo Malagasy</span>
+          <span className="hidden text-xs uppercase tracking-[0.2em] text-muted sm:inline">sakafo gasy</span>
         </Link>
         <nav className="flex items-center gap-1">
           {[...primary, ...secondary].map(({ href, label, icon: Icon }, i) => (
