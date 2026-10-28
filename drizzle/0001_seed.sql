@@ -41,7 +41,7 @@ SELECT * FROM (VALUES
     '/img/henomby.png', 
     false, 4, 2,
     'Henomby (somary matavy), Menaka kely, Tongolo gasy, Sira (izay tiana), Sakamalao',
-    '1. Tetehina ny henomby rehefa avy nodiovina tsara ary andrahoina amin’ny rano, atao ritra tsara (tsy misy rano mihitsy).\n2. Totoina miaraka ny tongolo gasy sy sakamalao, arotsaka rehefa ritra tsara ilay henomby dia asiana sira.\n3. Asiana menaka kely fotsiny, ary atao malefaka tena malefaka ny afo mba hidiran''ny tsiro tongolo gasy sy sakamalao any anaty henomby mandrapa masaka azy.',
+    '1. Tetehina ny henomby rehefa avy nodiovina tsara ary andrahoina amin''ny rano, atao ritra tsara (tsy misy rano mihitsy).\n2. Totoina miaraka ny tongolo gasy sy sakamalao, arotsaka rehefa ritra tsara ilay henomby dia asiana sira.\n3. Asiana menaka kely fotsiny, ary atao malefaka tena malefaka ny afo mba hidiran''ny tsiro tongolo gasy sy sakamalao any anaty henomby mandrapa masaka azy.',
     'Tsara raha misy lasary voatabia miaraka aminy.'
   ),
   ('Vorona ritra', 'Ganagana na vorontsiloza nendasina tamin''ny sakamalao sy tongolo gasy mandra-pahamenany.', '/img/vorona.png', true, 4, 3),

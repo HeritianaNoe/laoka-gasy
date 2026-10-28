@@ -6,7 +6,7 @@ import { Pool } from "pg";
  * Works on Vercel, Netlify, local, Neon, Supabase, Railway, etc.
  */
 function createDb() {
-  const url = process.env.DATABASE_URL?.trim();
+  const url = process.env.__DATABASE_URL__?.trim();
   if (!url) {
     throw new Error(
       "DATABASE_URL tsy voafaritra. Apetraho ao amin'ny .env.local (na env vars an'ny host).",
