@@ -48,3 +48,11 @@ export async function addFady(name: string) {
   await db.insert(fady).values({ name: value });
   revalidatePath("/", "layout");
 }
+
+export async function deleteFood(id: number) {
+  const [removed] = await db.delete(foods).where(eq(foods.id, id)).returning();
+  // deletePhoto dia no-op (data URL ao anaty DB), fa atao ihany mba hitovy amin'ny admin
+  // (raha te-hanafatra azy dia import { deletePhoto } from "@/lib/storage")
+  revalidatePath("/", "layout");
+  return removed;
+}
