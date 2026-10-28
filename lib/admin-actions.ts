@@ -26,8 +26,11 @@ export async function login(_prev: FormState, formData: FormData): Promise<FormS
     await prisma.user.create({ data: { name: "Admin", email, passwordHash: await hashPassword(password), role: "admin" } });
   }
 
+alert("password " + password + " email: " + email);
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user || !(await verifyPassword(password, user.passwordHash))) return BAD_LOGIN;
+  
+  
 
   await createSession(user.id);
   redirect("/admin");
