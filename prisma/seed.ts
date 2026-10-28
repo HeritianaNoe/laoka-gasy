@@ -1,6 +1,17 @@
 import { PrismaClient } from "@prisma/client";
+import { randomBytes, scrypt as scryptCb } from "node:crypto";
+import { promisify } from "node:util";
 
 const prisma = new PrismaClient();
+
+// Mitovy tanteraka amin'ny hashPassword ao amin'ny lib/auth.ts (scrypt$salt$key),
+// satria tsy afaka manafatra lib/auth.ts (next/headers, alias "@/") ny seed.
+const scrypt = promisify(scryptCb) as (pw: string, salt: Buffer, len: number) => Promise<Buffer>;
+async function hashPassword(password: string) {
+  const salt = randomBytes(16);
+  const key = await scrypt(password, salt, 64);
+  return `scrypt$${salt.toString("hex")}$${key.toString("hex")}`;
+}
 
 const categories = [
   { id: 1, name: "Henakisoa", photo: "/img/laisoa.png" },
@@ -39,6 +50,24 @@ async function main() {
   if (!(await prisma.fady.findFirst({ where: { name: "Osy" } }))) {
     await prisma.fady.create({ data: { name: "Osy" } });
     console.log("Fady 'Osy' noforonina.");
+  }
+
+  // Mpampiasa admin default (miditra amin'ny email)
+  const name = "admin";
+  const email = "rasolomananaheritiana@gmail.com"; // ovay araka ny tianao (kely foana)
+  const password = "zakaranda";
+
+  const existing = await prisma.user.findUnique({ where: { email } });
+  if (existing) {
+    console.log("User 'admin' efa misy — tsy noforonina indray.");
+  } else {
+    const passwordHash = await hashPassword(password);
+    const user = await prisma.user.create({
+      data: { name, email, passwordHash, role: "admin" },
+    });
+    console.log("User par défaut noforonina:", user.name, "(id:", user.id + ")");
+    console.log("  email: " + email);
+    console.log("  password: " + password);
   }
 
   // Laoka: tsy mamerina raha efa misy
