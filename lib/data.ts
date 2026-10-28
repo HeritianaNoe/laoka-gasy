@@ -54,10 +54,11 @@ export async function getFoodsForAdmin() {
   return rows.map(({ category, ...f }) => ({ ...f, categoryName: category?.name ?? null }));
 }
 
-// Tsy mandefa ny passwordHash mankany amin'ny client mihitsy
-export function getUsersForAdmin() {
-  return prisma.user.findMany({
+export async function getUsersForAdmin() {
+  const rows = await prisma.user.findMany({
     orderBy: { id: "asc" },
     select: { id: true, name: true, email: true, role: true, createdAt: true },
   });
+  // Ao amin'ny DB dia text ny role; averina ho "admin" | "user" ho an'ny UI
+  return rows.map((u) => ({ ...u, role: (u.role === "admin" ? "admin" : "user") as "admin" | "user" }));
 }
