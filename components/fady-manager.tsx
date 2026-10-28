@@ -1,16 +1,13 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Ban, Check, Pencil, Plus, Trash2, X } from "lucide-react";
+import { Ban, Plus } from "lucide-react";
 import type { Fady } from "@/db/schema";
-import { addFady, deleteFady, updateFady } from "@/lib/actions";
+import { addFady } from "@/lib/actions";
 
 export function FadyManager({ list }: { list: Fady[] }) {
   const [draft, setDraft] = useState("");
-  const [editing, setEditing] = useState<{ id: number; name: string } | null>(null);
   const [pending, startTransition] = useTransition();
-
-  const run = (fn: () => Promise<void>) => startTransition(fn);
 
   return (
     <div className="space-y-4">
@@ -18,7 +15,7 @@ export function FadyManager({ list }: { list: Fady[] }) {
         onSubmit={(e) => {
           e.preventDefault();
           if (!draft.trim()) return;
-          run(async () => {
+          startTransition(async () => {
             await addFady(draft);
             setDraft("");
           });
@@ -49,75 +46,11 @@ export function FadyManager({ list }: { list: Fady[] }) {
           {list.map((f) => (
             <li key={f.id} className="flex items-center gap-3 px-5 py-3.5">
               <Ban className="size-5 shrink-0 text-clay" />
-              {editing?.id === f.id ? (
-                <form
-                  className="flex flex-1 items-center gap-2"
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    if (!editing.name.trim()) return;
-                    run(async () => {
-                      await updateFady(f.id, editing.name);
-                      setEditing(null);
-                    });
-                  }}
-                >
-                  <input
-                    autoFocus
-                    value={editing.name}
-                    onChange={(e) => setEditing({ id: f.id, name: e.target.value })}
-                    onKeyDown={(e) => e.key === "Escape" && setEditing(null)}
-                    className="h-10 flex-1 rounded-xl border border-clay/40 bg-white px-3 outline-none focus:ring-4 focus:ring-clay/15"
-                  />
-                  <IconButton label="Tahirizo" type="submit"><Check className="size-4" /></IconButton>
-                  <IconButton label="Aoka ihany" onClick={() => setEditing(null)}><X className="size-4" /></IconButton>
-                </form>
-              ) : (
-                <>
-                  <span className="flex-1 text-lg font-medium">{f.name}</span>
-                  <IconButton label="Ovay" onClick={() => setEditing({ id: f.id, name: f.name })}>
-                    <Pencil className="size-4" />
-                  </IconButton>
-                  <IconButton
-                    label="Fafao"
-                    danger
-                    onClick={() => {
-                      if (confirm(`Fampitandremana! Tena hofafana marina ve ny "${f.name}"?`)) run(() => deleteFady(f.id));
-                    }}
-                  >
-                    <Trash2 className="size-4" />
-                  </IconButton>
-                </>
-              )}
+              <span className="flex-1 text-lg font-medium">{f.name}</span>
             </li>
           ))}
         </ul>
       )}
     </div>
-  );
-}
-
-function IconButton({
-  label,
-  danger,
-  type = "button",
-  onClick,
-  children,
-}: {
-  label: string;
-  danger?: boolean;
-  type?: "button" | "submit";
-  onClick?: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type={type}
-      aria-label={label}
-      title={label}
-      onClick={onClick}
-      className={`grid size-9 place-items-center rounded-full text-ink/60 transition hover:bg-paper ${danger ? "hover:text-clay" : "hover:text-ink"}`}
-    >
-      {children}
-    </button>
   );
 }

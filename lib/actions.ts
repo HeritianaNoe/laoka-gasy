@@ -1,10 +1,10 @@
 "use server";
 
-import { getStore } from "@netlify/blobs";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db } from "@/db";
 import { fady, foods } from "@/db/schema";
+import { uploadPhoto } from "@/lib/storage";
 
 export type FormState = { ok: boolean; message: string } | null;
 
@@ -19,14 +19,6 @@ export async function setRating(id: number, rating: number) {
   revalidatePath("/", "layout");
 }
 
-export async function deleteFood(id: number) {
-  const [removed] = await db.delete(foods).where(eq(foods.id, id)).returning();
-  if (removed?.photo.startsWith("/api/photos/")) {
-    await getStore("laoka-photos").delete(removed.photo.replace("/api/photos/", ""));
-  }
-  revalidatePath("/", "layout");
-}
-
 export async function addFood(_prev: FormState, formData: FormData): Promise<FormState> {
   const name = String(formData.get("name") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
@@ -37,12 +29,15 @@ export async function addFood(_prev: FormState, formData: FormData): Promise<For
   if (!(photo instanceof File) || photo.size === 0) return { ok: false, message: "Asio sary azafady!" };
   if (!photo.type.startsWith("image/")) return { ok: false, message: "Sary ihany no azo ampidirina." };
 
-  const key = `${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
-  await getStore("laoka-photos").set(key, await photo.arrayBuffer(), {
-    metadata: { contentType: photo.type },
-  });
+  let photoUrl: string;
+  try {
+    photoUrl = await uploadPhoto(photo, photo.type || "image/jpeg");
+  } catch (e) {
+    console.error("[addFood] upload", e);
+    return { ok: false, message: "Tsy nety ny fampiraisana sary. Andramo indray." };
+  }
 
-  await db.insert(foods).values({ name, description, categoryId, photo: `/api/photos/${key}` });
+  await db.insert(foods).values({ name, description, categoryId, photo: photoUrl });
   revalidatePath("/", "layout");
   return { ok: true, message: "Voatahiry ny laoka nampidirinao!" };
 }
@@ -51,17 +46,5 @@ export async function addFady(name: string) {
   const value = name.trim();
   if (!value) return;
   await db.insert(fady).values({ name: value });
-  revalidatePath("/", "layout");
-}
-
-export async function updateFady(id: number, name: string) {
-  const value = name.trim();
-  if (!value) return;
-  await db.update(fady).set({ name: value }).where(eq(fady.id, id));
-  revalidatePath("/", "layout");
-}
-
-export async function deleteFady(id: number) {
-  await db.delete(fady).where(eq(fady.id, id));
   revalidatePath("/", "layout");
 }

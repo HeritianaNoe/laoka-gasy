@@ -7,8 +7,8 @@ const fraunces = Fraunces({ subsets: ["latin"], variable: "--font-fraunces", axe
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
 
 export const metadata: Metadata = {
-  title: "Laoka — Lisitry ny laoka gasy",
-  description: "Tahirio, kajio ary safidio ireo laoka gasy tianao indrindra.",
+  title: "Laoka — Lisitry ny laoka Malagasy",
+  description: "Tehirizo, kajio ary safidio ireo laoka Malagasy tianao indrindra.",
   icons: { icon: "/icon.svg", apple: "/icon.svg" },
 };
 

@@ -1,12 +1,15 @@
 "use client";
 
-import Image from "next/image";
+import { Photo } from "@/components/photo";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Ban, Dices, Search } from "lucide-react";
 import type { Category, Food } from "@/db/schema";
+import { Pagination } from "./pagination";
 import { HeartButton, StarRating } from "./rating";
+
+const PAGE_SIZE = 9;
 
 export type FoodWithFady = Food & { fadyMatches: string[] };
 
@@ -23,18 +26,42 @@ export function FoodBrowser({
   const [query, setQuery] = useState("");
   const [hideFady, setHideFady] = useState(true);
   const [onlyHearts, setOnlyHearts] = useState(false);
+  const [page, setPage] = useState(1);
+  const [prevCategory, setPrevCategory] = useState(activeCategory);
+  const top = useRef<HTMLElement>(null);
 
-  const visible = useMemo(() => {
+  // Miverina amin'ny pejy 1 rehefa miova sokajy
+  if (prevCategory !== activeCategory) {
+    setPrevCategory(activeCategory);
+    setPage(1);
+  }
+
+  // Laoka mifanaraka amin'ny fikarohana sy ny "tiako" (alohan'ny fanafenana ny fady)
+  const matching = useMemo(() => {
     const q = query.trim().toLowerCase();
     return foods.filter(
       (f) =>
         (!q || f.name.toLowerCase().includes(q) || f.description.toLowerCase().includes(q)) &&
-        (!hideFady || f.fadyMatches.length === 0) &&
         (!onlyHearts || f.heart),
     );
-  }, [foods, query, hideFady, onlyHearts]);
+  }, [foods, query, onlyHearts]);
 
-  const fadyCount = foods.filter((f) => f.fadyMatches.length > 0).length;
+  // Isan'ny fady ao anatin'ireo: io ihany no miova rehefa avela na afenina ny fady
+  const fadyCount = useMemo(() => matching.filter((f) => f.fadyMatches.length > 0).length, [matching]);
+  const visible = useMemo(
+    () => (hideFady ? matching.filter((f) => f.fadyMatches.length === 0) : matching),
+    [matching, hideFady],
+  );
+
+  const pageCount = Math.max(1, Math.ceil(visible.length / PAGE_SIZE));
+  const current = Math.min(page, pageCount);
+  const pageFoods = visible.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE);
+
+  function goTo(n: number) {
+    setPage(n);
+    top.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
   const categoryName = (id: number | null) => categories.find((c) => c.id === id)?.name;
 
   function pickRandom() {
@@ -44,14 +71,17 @@ export function FoodBrowser({
   }
 
   return (
-    <section className="space-y-6">
+    <section ref={top} className="scroll-mt-24 space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <label className="relative flex-1">
           <Search className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-muted" />
           <input
             type="search"
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setPage(1);
+            }}
             placeholder="Hikaroka laoka… (ravitoto, akoho…)"
             className="h-12 w-full rounded-full border border-ink/15 bg-white/70 pr-4 pl-12 text-base outline-none placeholder:text-muted/70 focus:border-clay focus:ring-4 focus:ring-clay/15"
           />
@@ -76,11 +106,26 @@ export function FoodBrowser({
       </div>
 
       <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted">
-        <Toggle checked={onlyHearts} onChange={setOnlyHearts}>Ireo tiako ihany</Toggle>
-        <Toggle checked={hideFady} onChange={setHideFady}>
+        <Toggle
+          checked={onlyHearts}
+          onChange={(v) => {
+            setOnlyHearts(v);
+            setPage(1);
+          }}
+        >Ireo tiako ihany</Toggle>
+        <Toggle
+          checked={hideFady}
+          onChange={(v) => {
+            setHideFady(v);
+            setPage(1);
+          }}
+        >
           Afeno ny fady {fadyCount > 0 && <span className="text-clay">({fadyCount})</span>}
         </Toggle>
-        <span className="ml-auto">{visible.length} laoka</span>
+        <span className="ml-auto text-right">
+          {visible.length} laoka
+          {hideFady && fadyCount > 0 && <span className="text-clay"> · {fadyCount} afenina (fady)</span>}
+        </span>
       </div>
 
       {visible.length === 0 ? (
@@ -96,7 +141,7 @@ export function FoodBrowser({
         </div>
       ) : (
         <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {visible.map((food, i) => (
+          {pageFoods.map((food, i) => (
             <li key={food.id} className="rise" style={{ animationDelay: `${Math.min(i, 8) * 50}ms` }}>
               <Link
                 href={`/laoka/${food.id}`}
@@ -104,7 +149,7 @@ export function FoodBrowser({
               >
                 <div className="relative aspect-[4/3] overflow-hidden bg-paper">
                   {food.photo && (
-                    <Image
+                    <Photo
                       src={food.photo}
                       alt={food.name}
                       fill
@@ -134,6 +179,8 @@ export function FoodBrowser({
           ))}
         </ul>
       )}
+
+      <Pagination page={current} pageCount={pageCount} onChange={goTo} />
     </section>
   );
 }

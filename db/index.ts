@@ -1,11 +1,19 @@
-import { drizzle as drizzleNetlify } from "drizzle-orm/netlify-db";
-import { drizzle as drizzlePg } from "drizzle-orm/node-postgres";
+import { drizzle } from "drizzle-orm/node-postgres";
+import { Pool } from "pg";
 
-// Tsy mampiasa db.query, ka tsy ilaina eto ny "schema" (miova arakaraka ny version an'ny drizzle).
-const netlifyDb = () => drizzleNetlify();
-type Db = ReturnType<typeof netlifyDb>;
+/**
+ * Database client — standard Postgres via DATABASE_URL.
+ * Works on Vercel, Netlify, local, Neon, Supabase, Railway, etc.
+ */
+function createDb() {
+  const url = process.env.DATABASE_URL?.trim();
+  if (!url) {
+    throw new Error(
+      "DATABASE_URL tsy voafaritra. Apetraho ao amin'ny .env.local (na env vars an'ny host).",
+    );
+  }
+  const pool = new Pool({ connectionString: url });
+  return drizzle(pool);
+}
 
-// Eo an-toerana: DATABASE_URL (Postgres mahazatra). Ao amin'ny Netlify: Netlify DB.
-export const db: Db = process.env.DATABASE_URL
-  ? (drizzlePg({ connection: process.env.DATABASE_URL }) as unknown as Db)
-  : netlifyDb();
+export const db = createDb();

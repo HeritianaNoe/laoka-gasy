@@ -6,14 +6,15 @@ import { usePathname } from "next/navigation";
 const tabs = [
   { href: "/admin", label: "Sokajy" },
   { href: "/admin/laoka", label: "Laoka" },
+  { href: "/admin/fady", label: "Fady" },
   { href: "/admin/mpampiasa", label: "Mpampiasa" },
 ];
 
-export function AdminTabs() {
+export function AdminTabs({ isAdmin }: { isAdmin: boolean }) {
   const pathname = usePathname();
   return (
     <nav className="flex gap-1 border-b border-ink/10">
-      {tabs.map((t) => {
+      {tabs.filter((t) => isAdmin || t.href !== "/admin/mpampiasa").map((t) => {
         const active = t.href === "/admin" ? pathname === "/admin" : pathname.startsWith(t.href);
         return (
           <Link

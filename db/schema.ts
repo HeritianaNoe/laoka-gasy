@@ -12,7 +12,7 @@ export const foods = pgTable("foods", {
   id: serial().primaryKey(),
   name: text().notNull(),
   description: text().notNull().default(""),
-  // Either a static asset path ("/img/ravitoto.png") or an uploaded photo ("/api/photos/<key>")
+  // Static asset path ("/img/ravitoto.png") or data: URL for uploaded photos
   photo: text().notNull().default(""),
   heart: boolean().notNull().default(false),
   rating: integer().notNull().default(0),

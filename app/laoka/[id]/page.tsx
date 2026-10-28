@@ -1,9 +1,8 @@
-import Image from "next/image";
+import { Photo } from "@/components/photo";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Ban } from "lucide-react";
 import { HeartButton, StarRating } from "@/components/rating";
-import { DeleteFoodButton } from "@/components/delete-food-button";
 import { getCategories, getFadyList, getFood, matchFady } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
@@ -26,7 +25,7 @@ export default async function FoodPage({ params }: { params: Promise<{ id: strin
       <div className="mt-5 grid gap-8 lg:grid-cols-[1.2fr_1fr] lg:items-center">
         <div className="relative aspect-[4/3] overflow-hidden rounded-[2rem] bg-paper shadow-xl shadow-ink/10">
           {food.photo && (
-            <Image src={food.photo} alt={food.name} fill priority sizes="(min-width: 1024px) 640px, 100vw" className="object-cover" />
+            <Photo src={food.photo} alt={food.name} fill priority sizes="(min-width: 1024px) 640px, 100vw" className="object-cover" />
           )}
           <HeartButton id={food.id} heart={food.heart} className="absolute top-4 right-4 size-12" />
         </div>
@@ -51,7 +50,6 @@ export default async function FoodPage({ params }: { params: Promise<{ id: strin
             <span className="text-sm font-medium text-muted">Naoty:</span>
             <StarRating id={food.id} rating={food.rating} size="lg" />
           </div>
-          <DeleteFoodButton id={food.id} name={food.name} />
         </div>
       </div>
     </article>

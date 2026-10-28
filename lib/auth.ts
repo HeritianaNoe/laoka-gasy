@@ -62,9 +62,17 @@ export async function getCurrentUser(): Promise<User | null> {
   return user ?? null;
 }
 
-// Antsoina isaky ny pejy admin SY isaky ny action: ny UI irery tsy ampy fiarovana.
-export async function requireAdmin(): Promise<User> {
+// Mpampiasa rehetra miditra (admin na user): afaka mijery sy mamorona/manova ao amin'ny dashboard.
+// Antsoina isaky ny pejy SY isaky ny action: ny UI irery tsy ampy fiarovana.
+export async function requireUser(): Promise<User> {
   const user = await getCurrentUser();
-  if (!user || user.role !== "admin") redirect("/admin/miditra");
+  if (!user) redirect("/admin/miditra");
+  return user;
+}
+
+// Admin ihany: famafana (laoka, sokajy, fady) sy fitantanana mpampiasa.
+export async function requireAdmin(): Promise<User> {
+  const user = await requireUser();
+  if (user.role !== "admin") redirect("/admin");
   return user;
 }

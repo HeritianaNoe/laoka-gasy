@@ -6,13 +6,13 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminLoginPage() {
   const user = await getCurrentUser();
-  if (user?.role === "admin") redirect("/admin");
+  if (user) redirect("/admin");
 
   return (
     <div className="mx-auto max-w-md space-y-8 pt-14">
       <header>
-        <h1 className="font-display text-4xl font-semibold">Fidirana admin</h1>
-        <p className="mt-3 text-lg text-muted">Ho an'ny mpitantana ihany ity faritra ity.</p>
+        <h1 className="font-display text-4xl font-semibold">Fidirana dashboard</h1>
+        <p className="mt-3 text-lg text-muted">Ho an'ny mpitantana sy ny mpampiasa voasoratra ihany ity faritra ity.</p>
       </header>
       <LoginForm />
     </div>

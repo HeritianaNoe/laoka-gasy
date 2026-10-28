@@ -1,8 +1,8 @@
 import { CategoryManager } from "@/components/admin/category-manager";
-import { requireAdmin } from "@/lib/auth";
+import { requireUser } from "@/lib/auth";
 import { getCategoriesWithCount } from "@/lib/data";
 
 export default async function AdminCategoriesPage() {
-  await requireAdmin();
-  return <CategoryManager categories={await getCategoriesWithCount()} />;
+  const me = await requireUser();
+  return <CategoryManager categories={await getCategoriesWithCount()} canDelete={me.role === "admin"} />;
 }

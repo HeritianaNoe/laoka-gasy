@@ -1,9 +1,47 @@
+# ---- Dependencies ----
 /node_modules
+/.pnp
+.pnp.*
+.yarn/*
+
+# ---- Next.js build ----
 /.next/
+/out/
+/build
+next-env.d.ts
+
+# ---- TypeScript ----
+*.tsbuildinfo
+
+# ---- Sekreta / environment (aza alefa any GitHub mihitsy) ----
+.env
+.env.*
+!.env.example
+*.pem
+
+# ---- Logs ----
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
-.env*
-*.tsbuildinfo
-next-env.d.ts
+*.log
+
+# ---- Deploy (Vercel / Netlify) ----
+.vercel
+.netlify
+
+# ---- Test / coverage ----
+/coverage
+
+# ---- Drizzle Studio / fichier local ----
+*.sqlite
+*.sqlite3
+
+# ---- Editor sy rafitra ----
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+*~

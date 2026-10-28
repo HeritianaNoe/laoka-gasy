@@ -21,9 +21,11 @@ export function IconBtn({
   danger,
   disabled,
   onClick,
+  hint,
   children,
 }: {
   label: string;
+  hint?: string;
   danger?: boolean;
   disabled?: boolean;
   onClick: () => void;
@@ -33,10 +35,10 @@ export function IconBtn({
     <button
       type="button"
       aria-label={label}
-      title={label}
+      title={disabled && hint ? hint : label}
       disabled={disabled}
       onClick={onClick}
-      className={`grid size-9 place-items-center rounded-full text-ink/60 transition hover:bg-paper disabled:opacity-40 ${danger ? "hover:text-clay" : "hover:text-ink"}`}
+      className={`grid size-9 place-items-center rounded-full text-ink/60 transition hover:bg-paper disabled:cursor-not-allowed disabled:opacity-40 ${danger ? "hover:text-clay" : "hover:text-ink"}`}
     >
       {children}
     </button>

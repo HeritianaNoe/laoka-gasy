@@ -3,8 +3,11 @@
 import { useActionState, useEffect, useRef, useState, useTransition } from "react";
 import { CheckCircle2, Loader2, Pencil, Plus, Trash2, TriangleAlert, X } from "lucide-react";
 import { createCategory, deleteCategory, updateCategory, type FormState } from "@/lib/admin-actions";
+import { Pagination } from "@/components/pagination";
 
 type Row = { id: number; name: string; photo: string; foodCount: number };
+
+const PAGE_SIZE = 10;
 
 const field =
   "w-full rounded-xl border border-ink/15 bg-white px-3 py-2.5 text-base outline-none focus:border-clay focus:ring-4 focus:ring-clay/15";
@@ -89,7 +92,7 @@ function CategoryForm({
   );
 }
 
-function CategoryRow({ row }: { row: Row }) {
+function CategoryRow({ row, canDelete }: { row: Row; canDelete: boolean }) {
   const [editing, setEditing] = useState(false);
   const [pending, startTransition] = useTransition();
 
@@ -127,13 +130,14 @@ function CategoryRow({ row }: { row: Row }) {
       <button
         type="button"
         aria-label={`Fafao ${row.name}`}
-        title="Fafao"
-        disabled={pending}
+        title={canDelete ? "Fafao" : "Admin ihany no afaka mamafa"}
+        disabled={pending || !canDelete}
         onClick={() => {
+          if (!canDelete) return;
           const note = row.foodCount ? `\n${row.foodCount} laoka no tsy hanana sokajy intsony.` : "";
           if (confirm(`Tena hofafana marina ve ny sokajy "${row.name}"?${note}`)) startTransition(() => deleteCategory(row.id));
         }}
-        className="grid size-9 place-items-center rounded-full text-ink/60 transition hover:bg-paper hover:text-clay"
+        className="grid size-9 place-items-center rounded-full text-ink/60 transition hover:bg-paper hover:text-clay disabled:pointer-events-auto disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-ink/60"
       >
         <Trash2 className="size-4" />
       </button>
@@ -141,8 +145,12 @@ function CategoryRow({ row }: { row: Row }) {
   );
 }
 
-export function CategoryManager({ categories }: { categories: Row[] }) {
+export function CategoryManager({ categories, canDelete }: { categories: Row[]; canDelete: boolean }) {
   const [adding, setAdding] = useState(false);
+  const [page, setPage] = useState(1);
+  const pageCount = Math.max(1, Math.ceil(categories.length / PAGE_SIZE));
+  const current = Math.min(page, pageCount); // raha voafafa ny sokajy farany amin'ny pejy farany
+  const shown = categories.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE);
 
   return (
     <section className="space-y-4">
@@ -169,11 +177,13 @@ export function CategoryManager({ categories }: { categories: Row[] }) {
         </p>
       ) : (
         <ul className="divide-y divide-ink/10 overflow-hidden rounded-3xl border border-ink/10 bg-white/60">
-          {categories.map((c) => (
-            <CategoryRow key={c.id} row={c} />
+          {shown.map((c) => (
+            <CategoryRow key={c.id} row={c} canDelete={canDelete} />
           ))}
         </ul>
       )}
+
+      <Pagination page={current} pageCount={pageCount} onChange={setPage} />
     </section>
   );
 }

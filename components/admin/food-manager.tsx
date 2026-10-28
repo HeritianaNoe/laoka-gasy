@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { Heart, Loader2, Pencil, Plus, Search, Star, Trash2, X } from "lucide-react";
 import { createFood, removeFood, updateFood, type FormState } from "@/lib/admin-actions";
+import { Pagination } from "@/components/pagination";
 import { field, IconBtn, primaryBtn, Status, Thumb } from "./ui";
 
 type Food = {
@@ -16,6 +17,8 @@ type Food = {
   categoryName: string | null;
 };
 type Cat = { id: number; name: string };
+
+const PAGE_SIZE = 10;
 
 function FoodForm({
   action,
@@ -111,7 +114,7 @@ function FoodForm({
   );
 }
 
-function FoodRow({ food, categories }: { food: Food; categories: Cat[] }) {
+function FoodRow({ food, categories, canDelete }: { food: Food; categories: Cat[]; canDelete: boolean }) {
   const [editing, setEditing] = useState(false);
   const [pending, startTransition] = useTransition();
 
@@ -147,8 +150,10 @@ function FoodRow({ food, categories }: { food: Food; categories: Cat[] }) {
       <IconBtn
         label={`Fafao ${food.name}`}
         danger
-        disabled={pending}
+        disabled={pending || !canDelete}
+        hint="Admin ihany no afaka mamafa"
         onClick={() => {
+          if (!canDelete) return;
           if (confirm(`Tena hofafana marina ve ny laoka "${food.name}"?`)) startTransition(() => removeFood(food.id));
         }}
       >
@@ -158,10 +163,14 @@ function FoodRow({ food, categories }: { food: Food; categories: Cat[] }) {
   );
 }
 
-export function FoodManager({ foods, categories }: { foods: Food[]; categories: Cat[] }) {
+export function FoodManager({ foods, categories, canDelete }: { foods: Food[]; categories: Cat[]; canDelete: boolean }) {
   const [adding, setAdding] = useState(false);
   const [q, setQ] = useState("");
-  const shown = useMemo(() => foods.filter((f) => f.name.toLowerCase().includes(q.trim().toLowerCase())), [foods, q]);
+  const [page, setPage] = useState(1);
+  const filtered = useMemo(() => foods.filter((f) => f.name.toLowerCase().includes(q.trim().toLowerCase())), [foods, q]);
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const current = Math.min(page, pageCount); // raha voafafa ny laoka farany amin'ny pejy farany
+  const shown = filtered.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE);
 
   return (
     <section className="space-y-4">
@@ -172,7 +181,10 @@ export function FoodManager({ foods, categories }: { foods: Food[]; categories: 
             <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted" />
             <input
               value={q}
-              onChange={(e) => setQ(e.target.value)}
+              onChange={(e) => {
+                setQ(e.target.value);
+                setPage(1);
+              }}
               placeholder="Hikaroka…"
               aria-label="Hikaroka laoka"
               className="h-11 rounded-full border border-ink/15 bg-white/70 pr-4 pl-9 outline-none focus:border-clay focus:ring-4 focus:ring-clay/15"
@@ -201,10 +213,12 @@ export function FoodManager({ foods, categories }: { foods: Food[]; categories: 
       ) : (
         <ul className="divide-y divide-ink/10 overflow-hidden rounded-3xl border border-ink/10 bg-white/60">
           {shown.map((f) => (
-            <FoodRow key={f.id} food={f} categories={categories} />
+            <FoodRow key={f.id} food={f} categories={categories} canDelete={canDelete} />
           ))}
         </ul>
       )}
+
+      <Pagination page={current} pageCount={pageCount} onChange={setPage} />
     </section>
   );
 }
