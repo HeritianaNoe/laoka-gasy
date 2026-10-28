@@ -1,4 +1,4 @@
-import { createHmac, scrypt as scryptCb, timingSafeEqual } from "node:crypto";
+import { createHmac, randomBytes, scrypt as scryptCb, timingSafeEqual } from "node:crypto";
 import { promisify } from "node:util";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -9,9 +9,6 @@ const scrypt = promisify(scryptCb) as (pw: string, salt: Buffer, len: number) =>
 
 const COOKIE = "laoka_session";
 const MAX_AGE = 60 * 60 * 24 * 7; // 7 andro
-
-// Salt raikitra (tsy misy random intsony) mba hahatonga azy ho deterministic
-const STATIC_SALT = Buffer.from("laoka_fixed_salt_secret_key");
 
 function secret() {
   const s = process.env.SESSION_SECRET;
@@ -27,10 +24,10 @@ export function safeEqual(a: string, b: string) {
   return x.length === y.length && timingSafeEqual(x, y);
 }
 
-// Nesorina ny random, mampiasa STATIC_SALT izy izao
 export async function hashPassword(password: string) {
-  const key = await scrypt(password, STATIC_SALT, 64);
-  return `scrypt$${STATIC_SALT.toString("hex")}$${key.toString("hex")}`;
+  const salt = randomBytes(16);
+  const key = await scrypt(password, salt, 64);
+  return `scrypt$${salt.toString("hex")}$${key.toString("hex")}`;
 }
 
 export async function verifyPassword(password: string, stored: string) {
