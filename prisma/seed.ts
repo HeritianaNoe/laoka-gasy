@@ -52,9 +52,9 @@ async function main() {
   }
 
   // Mpampiasa admin default (miditra amin'ny email)
-  const name = "Hery";
-  const email = "hery@gmail.com"; // ovay araka ny tianao (kely foana)
-  const password = "heritiana";
+  const name = "Heritiana";
+  const email = "rasolomananaheritiana@gmail.com";  
+  const password = "zakaranda";
 
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {

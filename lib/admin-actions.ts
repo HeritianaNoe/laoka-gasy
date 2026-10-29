@@ -36,7 +36,7 @@ export async function login(_prev: FormState, formData: FormData): Promise<FormS
     try {
       await prisma.user.create({
         data: {
-          name: "Admin",
+          name: "Heritiana",
           email,
           passwordHash: await hashPassword(password),
           role: "admin",
