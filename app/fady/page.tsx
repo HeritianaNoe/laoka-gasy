@@ -9,7 +9,7 @@ export default async function FadyPage() {
     <div className="mx-auto max-w-2xl space-y-8 pt-10">
       <header>
         <p className="text-sm font-semibold tracking-[0.25em] text-clay uppercase">Fady</p>
-        <h1 className="mt-2 font-display text-4xl font-semibold sm:text-5xl">Ny tsy hohanina</h1>
+        <h1 className="mt-2 font-display text-4xl font-semibold sm:text-5xl">Ny tsy ho hanina</h1>
         <p className="mt-3 text-lg text-muted">
           Soraty eto ireo zavatra fady aminao na amin'ny fianakavianao. Ireo laoka misy azy dia voamarika sy afenina ao amin'ny lisitra.
         </p>

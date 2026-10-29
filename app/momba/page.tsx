@@ -22,9 +22,9 @@ export default function AboutPage() {
       </header>
       <div className="space-y-4 text-lg leading-relaxed text-ink/80">
         <p>
-          Laoka dia fitaovana kely hanampy anao hitahiry sy handamina ireo laoka gasy tianao: ravitoto, henomby ritra,
-          akoho sy sakamalao… Omeo kintana izy ireo, mariho ireo tianao indrindra, ary avelao hisafidy ho anao ny
-          rindranasa rehefa tsy fantatrao izay hohanina.
+          Laoka dia fitaovana kely hanampy anao hitahiry sy handamina ireo laoka gasy tianao toy ny henakisoa ravitoto, henomby ritra,
+          akoho atao saosy… Omeo kintana izy ireo, asio fo, mariho ireo tianao indrindra, ary avelao hisafidy ho anao ny
+          rindran'asa rehefa tsy fantatrao izay hohanina.
         </p>
         <p>
           Ao amin'ny pejy <strong>Fady</strong>, azonao atao ny manoratra ireo zavatra tsy hohaninao — ireo laoka misy
@@ -35,7 +35,7 @@ export default function AboutPage() {
       <footer className="flex items-center gap-3 border-t border-ink/10 pt-6 text-sm text-muted">
         <Image src="/icon.svg" alt="" width={28} height={28} className="size-7 rounded-lg" />
         <p>
-          © {new Date().getFullYear()} <span className="font-semibold text-ink">RASOLOMANANA Heritiana Noe</span>. Zo
+          © 2026 <span className="font-semibold text-ink">RASOLOMANANA Heritiana Noe</span>. Zo
           rehetra voatokana.
         </p>
       </footer>

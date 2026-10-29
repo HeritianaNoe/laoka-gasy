@@ -8,7 +8,7 @@ const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
 
 export const metadata: Metadata = {
   title: "Laoka — Lisitry ny laoka gasy",
-  description: "Tahirio, kajio ary safidio ireo laoka gasy tianao indrindra.",
+  description: "Tehirizo, kajio ary safidio ireo laoka gasy tianao indrindra.",
   icons: { icon: "/icon.svg", apple: "/icon.svg" },
 };
 

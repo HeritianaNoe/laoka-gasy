@@ -10,7 +10,7 @@ export default async function AddPage() {
       <header>
         <p className="text-sm font-semibold tracking-[0.25em] text-clay uppercase">Hampiditra</p>
         <h1 className="mt-2 font-display text-4xl font-semibold sm:text-5xl">Laoka vaovao</h1>
-        <p className="mt-3 text-lg text-muted">Asio sary, anarana ary famaritana fohy ny laoka tianao.</p>
+        <p className="mt-3 text-lg text-muted">Asio sary, anarana ary famaritana na fikarakarana azy fohy ny laoka tianao ampidirina.</p>
       </header>
       <AddFoodForm categories={categories} />
     </div>

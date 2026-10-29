@@ -13,7 +13,7 @@ const primary = [
 const secondary = [
   { href: "/fady", label: "Fady", icon: Ban },
   { href: "/momba", label: "Momba", icon: Info },
-  { href: "/admin", label: "Admin", icon: ShieldCheck },
+  { href: "/admin", label: "Login", icon: ShieldCheck },
 ];
 
 function isActive(pathname: string, href: string) {
