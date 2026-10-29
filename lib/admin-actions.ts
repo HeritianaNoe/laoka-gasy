@@ -57,6 +57,47 @@ export async function login(_prev: FormState, formData: FormData): Promise<FormS
   redirect("/admin");
 }
 
+// Fisoratana anarana (inscription) ho membre: foana foana ny role = "user" (tsy afaka misafidy "admin")
+export async function register(_prev: FormState, formData: FormData): Promise<FormState> {
+  const name = String(formData.get("name") ?? "").trim();
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const password = String(formData.get("password") ?? "");
+  const confirm = String(formData.get("confirm") ?? "");
+
+  if (name.length < 2 || name.length > 60) {
+    return { ok: false, message: "Soraty ny anaranao (2 hatramin'ny 60 litera)." };
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 120) {
+    return { ok: false, message: "Mailaka tsy marina." };
+  }
+  if (password.length < 8) {
+    return { ok: false, message: "8 litera farafahakeliny ny teny miafina." };
+  }
+  if (password !== confirm) {
+    return { ok: false, message: "Tsy mitovy ny teny miafina roa." };
+  }
+
+  const dup = await prisma.user.findUnique({ where: { email }, select: { id: true } });
+  if (dup) {
+    return { ok: false, message: "Efa misy mampiasa io mailaka io. Midira fa tsy misoratra anarana." };
+  }
+
+  let userId: number;
+  try {
+    const user = await prisma.user.create({
+      data: { name, email, role: "user", passwordHash: await hashPassword(password) },
+      select: { id: true },
+    });
+    userId = user.id;
+  } catch (e) {
+    console.error("[register]", e);
+    return { ok: false, message: "Tsy nety ny fisoratana anarana. Andramo indray afaka kelikely." };
+  }
+
+  await createSession(userId);
+  redirect("/admin");
+}
+
 export async function logout() {
   await destroySession();
   redirect("/admin/miditra");

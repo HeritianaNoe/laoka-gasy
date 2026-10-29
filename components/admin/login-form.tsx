@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState } from "react";
 import { Loader2, TriangleAlert } from "lucide-react";
 import { login, type FormState } from "@/lib/admin-actions";
@@ -31,6 +32,12 @@ export function LoginForm() {
       >
         {pending && <Loader2 className="size-4 animate-spin" />} Hiditra
       </button>
+      <p className="text-center text-sm text-muted">
+        Mbola tsy membre?{" "}
+        <Link href="/hisoratra" className="font-medium text-clay underline-offset-4 hover:underline">
+          Hisoratra anarana
+        </Link>
+      </p>
     </form>
   );
 }
