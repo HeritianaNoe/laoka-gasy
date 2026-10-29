@@ -19,17 +19,39 @@ export async function login(_prev: FormState, formData: FormData): Promise<FormS
   if (!email || !password) return BAD_LOGIN;
 
   // Admin voalohany: noforonina avy amin'ny ADMIN_EMAIL / ADMIN_PASSWORD raha mbola tsy misy admin
-  const existingAdmin = await prisma.user.findFirst({ where: { role: "admin" }, select: { id: true } });
+  const existingAdmin = await prisma.user.findFirst({
+    where: { role: "admin" },
+    select: { id: true },
+  });
   const envEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
   const envPassword = process.env.ADMIN_PASSWORD;
-  if (!existingAdmin && envEmail && envPassword && safeEqual(email, envEmail) && safeEqual(password, envPassword)) {
-    await prisma.user.create({ data: { name: "Admin", email, passwordHash: await hashPassword(password), role: "admin" } });
+
+  if (
+    !existingAdmin &&
+    envEmail &&
+    envPassword &&
+    safeEqual(email, envEmail) &&
+    safeEqual(password, envPassword)
+  ) {
+    try {
+      await prisma.user.create({
+        data: {
+          name: "Admin",
+          email,
+          passwordHash: await hashPassword(password),
+          role: "admin",
+        },
+      });
+    } catch (e) {
+      console.error("[login] create first admin", e);
+      // Aza miverina BAD_LOGIN eto — avelao hitohy ny findUnique ambany
+    }
   }
 
   const user = await prisma.user.findUnique({ where: { email } });
-  if (!user || !(await verifyPassword(password, user.passwordHash))) return BAD_LOGIN;
-  
-  
+  if (!user || !(await verifyPassword(password, user.passwordHash))) {
+    return BAD_LOGIN;
+  }
 
   await createSession(user.id);
   redirect("/admin");
@@ -224,11 +246,36 @@ export async function createUser(_prev: FormState, formData: FormData): Promise<
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const password = String(formData.get("password") ?? "");
   const role = formData.get("role") === "admin" ? "admin" : "user";
-  if (!name || !email.includes("@")) return { ok: false, message: "Fenoy ny anarana sy ny mailaka marina." };
-  if (password.length < 8) return { ok: false, message: "8 litera farafahakeliny ny teny miafina." };
+
+  if (!name || !email.includes("@")) {
+    return { ok: false, message: "Fenoy ny anarana sy ny mailaka marina." };
+  }
+  if (password.length < 8) {
+    return { ok: false, message: "8 litera farafahakeliny ny teny miafina." };
+  }
+
   const dup = await prisma.user.findUnique({ where: { email }, select: { id: true } });
-  if (dup) return { ok: false, message: "Efa misy mampiasa io mailaka io." };
-  await prisma.user.create({ data: { name, email, role, passwordHash: await hashPassword(password) } });
+  if (dup) {
+    return { ok: false, message: "Efa misy mampiasa io mailaka io." };
+  }
+
+  try {
+    await prisma.user.create({
+      data: {
+        name,
+        email,
+        role,
+        passwordHash: await hashPassword(password),
+      },
+    });
+  } catch (e) {
+    console.error("[createUser]", e);
+    return {
+      ok: false,
+      message: "Tsy nety ny firaketana. Jereo ny DATABASE_URL na ny table users.",
+    };
+  }
+
   refresh();
   return { ok: true, message: `Voasoratra i ${name}.` };
 }

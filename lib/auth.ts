@@ -1,11 +1,11 @@
-import { createHmac, randomBytes, scrypt as scryptCb, timingSafeEqual } from "node:crypto";
+import { createHmac, randomBytes, scrypt, timingSafeEqual } from "node:crypto";
 import { promisify } from "node:util";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import type { User } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
-const scrypt = promisify(scryptCb) as (pw: string, salt: Buffer, len: number) => Promise<Buffer>;
+const scryptAsync = promisify(scrypt);
 
 const COOKIE = "laoka_session";
 const MAX_AGE = 60 * 60 * 24 * 7; // 7 andro
@@ -24,17 +24,19 @@ export function safeEqual(a: string, b: string) {
   return x.length === y.length && timingSafeEqual(x, y);
 }
 
-export async function hashPassword(password: string) {
-  const salt = randomBytes(16);
-  const key = await scrypt(password, salt, 64);
-  return `scrypt$${salt.toString("hex")}$${key.toString("hex")}`;
+export async function hashPassword(password: string): Promise<string> {
+  const salt = randomBytes(16).toString("hex");
+  const derived = (await scryptAsync(password, salt, 64)) as Buffer;
+  return `${salt}:${derived.toString("hex")}`;
 }
 
-export async function verifyPassword(password: string, stored: string) {
-  const [scheme, saltHex, keyHex] = stored.split("$");
-  if (scheme !== "scrypt" || !saltHex || !keyHex) return false;
-  const key = await scrypt(password, Buffer.from(saltHex, "hex"), 64);
-  return safeEqual(key.toString("hex"), keyHex);
+export async function verifyPassword(password: string, stored: string): Promise<boolean> {
+  const [salt, key] = stored.split(":");
+  if (!salt || !key) return false;
+  const derived = (await scryptAsync(password, salt, 64)) as Buffer;
+  const keyBuf = Buffer.from(key, "hex");
+  if (derived.length !== keyBuf.length) return false;
+  return timingSafeEqual(derived, keyBuf);
 }
 
 export async function createSession(userId: number) {

@@ -1,16 +1,15 @@
 import { PrismaClient } from "@prisma/client";
-import { randomBytes, scrypt as scryptCb } from "node:crypto";
+import { randomBytes, scrypt } from "node:crypto";
 import { promisify } from "node:util";
 
 const prisma = new PrismaClient();
 
-// Mitovy tanteraka amin'ny hashPassword ao amin'ny lib/auth.ts (scrypt$salt$key),
-// satria tsy afaka manafatra lib/auth.ts (next/headers, alias "@/") ny seed.
-const scrypt = promisify(scryptCb) as (pw: string, salt: Buffer, len: number) => Promise<Buffer>;
-async function hashPassword(password: string) {
-  const salt = randomBytes(16);
-  const key = await scrypt(password, salt, 64);
-  return `scrypt$${salt.toString("hex")}$${key.toString("hex")}`;
+const scryptAsync = promisify(scrypt);
+
+async function hashPassword(password: string): Promise<string> {
+  const salt = randomBytes(16).toString("hex");
+  const derived = (await scryptAsync(password, salt, 64)) as Buffer;
+  return `${salt}:${derived.toString("hex")}`;
 }
 
 const categories = [
@@ -53,9 +52,9 @@ async function main() {
   }
 
   // Mpampiasa admin default (miditra amin'ny email)
-  const name = "admin";
-  const email = "rasolomananaheritiana@gmail.com"; // ovay araka ny tianao (kely foana)
-  const password = "zakaranda";
+  const name = "Hery";
+  const email = "hery@gmail.com"; // ovay araka ny tianao (kely foana)
+  const password = "heritiana";
 
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
