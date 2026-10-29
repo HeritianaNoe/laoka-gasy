@@ -39,10 +39,10 @@ export function RegisterForm() {
         disabled={pending}
         className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-ravitoto font-medium text-rice transition hover:bg-ravitoto-light disabled:opacity-60"
       >
-        {pending && <Loader2 className="size-4 animate-spin" />} Hisoratra anarana
+        {pending && <Loader2 className="size-4 animate-spin" />} Hisoratra
       </button>
       <p className="text-center text-sm text-muted">
-        Efa membre ve?{" "}
+        Efa mpikambana ve?{" \u2014 "}
         <Link href="/admin/miditra" className="font-medium text-clay underline-offset-4 hover:underline">
           Hiditra
         </Link>
