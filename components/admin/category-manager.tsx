@@ -66,7 +66,7 @@ function CategoryForm({
       </label>
       <label className="space-y-1.5 sm:col-span-2">
         <span className="text-sm font-medium">na lalan'ny sary efa misy</span>
-        <input name="photoPath" placeholder="/img/ravitoto.png" defaultValue={initial?.photo} className={field} />
+        <input name="photoPath" placeholder="/img/ravitoto.jpg" defaultValue={initial?.photo} className={field} />
       </label>
       <div className="flex flex-wrap items-center gap-3 sm:col-span-2">
         <button

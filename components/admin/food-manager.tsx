@@ -82,7 +82,7 @@ function FoodForm({
       </label>
       <label className="space-y-1.5">
         <span className="text-sm font-medium">na lalan'ny sary efa misy</span>
-        <input name="photoPath" placeholder="/img/ravitoto.png" defaultValue={initial?.photo} className={field} />
+        <input name="photoPath" placeholder="/img/ravitoto.jpg" defaultValue={initial?.photo} className={field} />
       </label>
       <label className="space-y-1.5">
         <span className="text-sm font-medium">Naoty</span>

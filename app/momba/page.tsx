@@ -5,7 +5,7 @@ export default function AboutPage() {
   return (
     <div className="mx-auto max-w-3xl space-y-8 pt-10">
       <div className="relative aspect-[21/9] overflow-hidden rounded-[2rem] bg-paper">
-        <Image src="/img/ravitoto.png" alt="Ravitoto" fill sizes="(min-width: 768px) 768px, 100vw" className="object-cover" />
+        <Image src="/img/ravitoto.jpg" alt="Ravitoto" fill sizes="(min-width: 768px) 768px, 100vw" className="object-cover" />
       </div>
       <header className="flex items-center gap-5">
         <Image

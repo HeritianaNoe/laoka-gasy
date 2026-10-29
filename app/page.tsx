@@ -15,7 +15,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
     <div className="space-y-10 pt-6">
       <section className="relative overflow-hidden rounded-[2rem] bg-ravitoto text-rice">
         <Image
-          src="/img/hero.png"
+          src="/img/hero.jpg"
           alt="Latabatra feno laoka gasy"
           fill
           priority
