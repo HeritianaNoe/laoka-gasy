@@ -21,8 +21,7 @@ export default async function FoodPage({ params }: { params: Promise<{ id: strin
       <Link href="/" className="inline-flex items-center gap-2 text-sm font-medium text-muted hover:text-ink">
         <ArrowLeft className="size-4" /> Hiverina amin'ny lisitra
       </Link>
-
-      <div className="mt-5 grid gap-8 lg:grid-cols-[1.2fr_1fr] lg:items-center">
+      <div className="mt-5 grid gap-8 lg:grid-cols-[1.2fr_1fr] lg:items-start">	
         <div className="relative aspect-[4/3] overflow-hidden rounded-[2rem] bg-paper shadow-xl shadow-ink/10">
           {food.photo && (
             <Photo src={food.photo} alt={food.name} fill priority sizes="(min-width: 1024px) 640px, 100vw" className="object-cover" />
