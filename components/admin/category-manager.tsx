@@ -102,7 +102,7 @@ function CategoryRow({ row, canDelete }: { row: Row; canDelete: boolean }) {
         <CategoryForm
           action={updateCategory.bind(null, row.id)}
           initial={row}
-          submitLabel="Tahirizo"
+          submitLabel="Tehirizo"
           onDone={() => setEditing(false)}
         />
       </li>

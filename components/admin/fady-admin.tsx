@@ -34,8 +34,8 @@ function FadyRow({ item }: { item: Fady }) {
           <button
             type="submit"
             disabled={saving}
-            aria-label="Tahirizo"
-            title="Tahirizo"
+            aria-label="Tehirizo"
+            title="Tehirizo"
             className="grid size-9 place-items-center rounded-full text-ravitoto transition hover:bg-paper disabled:opacity-40"
           >
             {saving ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />}

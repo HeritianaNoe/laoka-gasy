@@ -125,7 +125,7 @@ function FoodRow({ food, categories, canDelete }: { food: Food; categories: Cat[
           action={updateFood.bind(null, food.id)}
           categories={categories}
           initial={food}
-          submitLabel="Tahirizo"
+          submitLabel="Tehirizo"
           onDone={() => setEditing(false)}
         />
       </li>
