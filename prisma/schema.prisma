@@ -7,7 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Sokajy (categories): Henakisoa, Henomby, Akoho...
 model Category {
   id    Int    @id @default(autoincrement())
   name  String
@@ -17,31 +16,30 @@ model Category {
   @@map("categories")
 }
 
-// Laoka (dishes)
 model Food {
-  id          Int      @id @default(autoincrement())
-  name        String
-  description String   @default("")
-  // Static asset path ("/img/ravitoto.png") na data: URL ho an'ny sary nampidirina
-  photo       String   @default("")
-  heart       Boolean  @default(false)
-  rating      Int      @default(0)
-  categoryId  Int?     @map("category_id")
-  category    Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  id            Int             @id @default(autoincrement())
+  name          String
+  description   String          @default("")
+  photo         String          @default("")
+  heart         Boolean         @default(false)
+  rating        Int             @default(0)
+  categoryId    Int?            @map("category_id")
+  createdAt     DateTime        @default(now()) @map("created_at") @db.Timestamp(6)
+  category      Category?       @relation(fields: [categoryId], references: [id])
+  foodswithfady foodswithfady[]
 
+  @@index([categoryId])
   @@map("foods")
 }
 
-// Fady (zavatra tsy hohanina)
 model Fady {
-  id   Int    @id @default(autoincrement())
-  name String
+  id            Int             @id @default(autoincrement())
+  name          String
+  foodswithfady foodswithfady[]
 
   @@map("fady")
 }
 
-// Mpampiasa: role = "admin" | "user"
 model User {
   id           Int      @id @default(autoincrement())
   name         String
@@ -51,4 +49,15 @@ model User {
   createdAt    DateTime @default(now()) @map("created_at") @db.Timestamp(6)
 
   @@map("users")
+}
+
+model foodswithfady {
+  id      Int  @id @default(autoincrement())
+  id_food Int
+  id_fady Int
+  fady    Fady @relation(fields: [id_fady], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  foods   Food @relation(fields: [id_food], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([id_food, id_fady])
+  @@index([id_fady])
 }

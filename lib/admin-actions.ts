@@ -178,10 +178,10 @@ export async function deleteCategory(id: number) {
   refresh();
 }
 
-// ---------- CRUD Fady ----------
+// ---------- CRUD Fady (admin ihany) ----------
 
 export async function createFady(_prev: FormState, formData: FormData): Promise<FormState> {
-  await requireUser();
+  await requireAdmin();
   const name = String(formData.get("name") ?? "").trim();
   if (!name) return { ok: false, message: "Soraty ny fady." };
   try {
@@ -195,7 +195,7 @@ export async function createFady(_prev: FormState, formData: FormData): Promise<
 }
 
 export async function updateFady(id: number, _prev: FormState, formData: FormData): Promise<FormState> {
-  await requireUser();
+  await requireAdmin();
   const name = String(formData.get("name") ?? "").trim();
   if (!name) return { ok: false, message: "Soraty ny fady." };
   try {
@@ -239,12 +239,50 @@ async function readFoodForm(formData: FormData, current = ""): Promise<FoodInput
   };
 }
 
+/** Mampifandray ny akora hita amin'ny anaran'ny laoka amin'ny fady sy foodswithfady. */
+async function saveFoodWithIngredients(
+  data: { name: string; description: string; categoryId: number | null; rating: number; heart: boolean; photo: string },
+  id?: number,
+) {
+  const ingredients = [...new Set(data.name.split(/\s+sy\s+/i).map((part) => part.trim()).filter(Boolean))];
+  // Nested write (foodswithfady) → Prisma mitaky "checked input":
+  // category: { connect } fa tsy categoryId scalar.
+  const { categoryId, ...fields } = data;
+  const category =
+    categoryId != null
+      ? { category: { connect: { id: categoryId } } }
+      : id
+        ? { category: { disconnect: true } }
+        : {};
+
+  return prisma.$transaction(async (tx) => {
+    const fadyIds: number[] = [];
+    for (const name of ingredients) {
+      const found = await tx.fady.findFirst({
+        where: { name: { equals: name, mode: "insensitive" } },
+        select: { id: true },
+      });
+      const fady = found ?? (await tx.fady.create({ data: { name }, select: { id: true } }));
+      fadyIds.push(fady.id);
+    }
+    const links = {
+      foodswithfady: {
+        ...(id ? { deleteMany: {} } : {}),
+        create: fadyIds.map((id_fady) => ({ fady: { connect: { id: id_fady } } })),
+      },
+    };
+    return id
+      ? tx.food.update({ where: { id }, data: { ...fields, ...category, ...links } })
+      : tx.food.create({ data: { ...fields, ...category, ...links } });
+  });
+}
+
 export async function createFood(_prev: FormState, formData: FormData): Promise<FormState> {
   await requireUser();
   const data = await readFoodForm(formData);
   if ("error" in data) return { ok: false, message: data.error };
   try {
-    await prisma.food.create({ data });
+    await saveFoodWithIngredients(data);
   } catch (e) {
     console.error("[createFood]", e);
     return { ok: false, message: "Tsy nety ny firaketana. Jereo ny DATABASE_URL." };
@@ -260,7 +298,7 @@ export async function updateFood(id: number, _prev: FormState, formData: FormDat
   const data = await readFoodForm(formData, current.photo);
   if ("error" in data) return { ok: false, message: data.error };
   try {
-    await prisma.food.update({ where: { id }, data });
+    await saveFoodWithIngredients(data, id);
   } catch (e) {
     console.error("[updateFood]", e);
     return { ok: false, message: "Tsy nety ny firaketana. Jereo ny DATABASE_URL." };

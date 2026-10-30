@@ -92,7 +92,7 @@ export function AddFoodForm({ categories }: { categories: Category[] }) {
             name="description"
             required
             rows={4}
-            placeholder="Inona no ao anatiny? Ahoana no fahandrahoana azy?"
+            placeholder="Inona no ao anatiny? Ahoana no fandrahoana azy?"
             className={field}
           />
         </div>
@@ -118,7 +118,7 @@ export function AddFoodForm({ categories }: { categories: Category[] }) {
           className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-clay font-medium text-rice shadow-lg shadow-clay/25 transition hover:bg-clay-dark disabled:opacity-60 sm:w-auto sm:px-8"
         >
           {pending && <Loader2 className="size-4 animate-spin" />}
-          {pending ? "Mitahiry…" : "Tahirizo"}
+          {pending ? "Mitahiry…" : "Tehirizo"}
         </button>
       </div>
     </form>

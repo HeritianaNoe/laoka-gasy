@@ -2,32 +2,47 @@
 
 import { Photo } from "@/components/photo";
 import Link from "next/link";
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Ban, Dices, Search } from "lucide-react";
-import type { Category, Food } from "@prisma/client";
+import { Dices, Search } from "lucide-react";
+import type { Category, Fady, Food } from "@prisma/client";
+import { FadyMultiSelect } from "./fady-multi-select";
 import { Pagination } from "./pagination";
 import { HeartButton, StarRating } from "./rating";
 
 const PAGE_SIZE = 9;
 
-export type FoodWithFady = Food & { fadyMatches: string[] };
+/** Construit l'URL de la page d'accueil en conservant la catégorie et les fady choisis. */
+function buildHref(category?: number, fady: number[] = []) {
+  const params = new URLSearchParams();
+  if (category) params.set("sokajy", String(category));
+  if (fady.length > 0) params.set("fady", fady.join(","));
+  const qs = params.toString();
+  return qs ? `/?${qs}` : "/";
+}
 
 export function FoodBrowser({
   foods,
   categories,
   activeCategory,
+  fadyList,
+  selectedFady,
 }: {
-  foods: FoodWithFady[];
+  /** Déjà filtrés côté serveur : les plats liés aux fady choisis ne sont pas inclus. */
+  foods: Food[];
   categories: Category[];
   activeCategory?: number;
+  fadyList: Fady[];
+  selectedFady: number[];
 }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
-  const [hideFady, setHideFady] = useState(true);
   const [onlyHearts, setOnlyHearts] = useState(false);
   const [page, setPage] = useState(1);
   const [prevCategory, setPrevCategory] = useState(activeCategory);
+  const [fadyIds, setFadyIds] = useState(selectedFady);
+  const [prevFadyKey, setPrevFadyKey] = useState(selectedFady.join(","));
+  const [pending, startTransition] = useTransition();
   const top = useRef<HTMLElement>(null);
 
   // Miverina amin'ny pejy 1 rehefa miova sokajy
@@ -36,8 +51,16 @@ export function FoodBrowser({
     setPage(1);
   }
 
-  // Laoka mifanaraka amin'ny fikarohana sy ny "tiako" (alohan'ny fanafenana ny fady)
-  const matching = useMemo(() => {
+  // Synchronise la sélection avec l'URL (retour arrière du navigateur, lien partagé…)
+  const fadyKey = selectedFady.join(",");
+  if (prevFadyKey !== fadyKey) {
+    setPrevFadyKey(fadyKey);
+    setFadyIds(selectedFady);
+    setPage(1);
+  }
+
+  // Fikarohana sy "tiako" ihany: ny fady dia efa nesorin'ny serveur (foodswithfady)
+  const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
     return foods.filter(
       (f) =>
@@ -46,13 +69,6 @@ export function FoodBrowser({
     );
   }, [foods, query, onlyHearts]);
 
-  // Isan'ny fady ao anatin'ireo: io ihany no miova rehefa avela na afenina ny fady
-  const fadyCount = useMemo(() => matching.filter((f) => f.fadyMatches.length > 0).length, [matching]);
-  const visible = useMemo(
-    () => (hideFady ? matching.filter((f) => f.fadyMatches.length === 0) : matching),
-    [matching, hideFady],
-  );
-
   const pageCount = Math.max(1, Math.ceil(visible.length / PAGE_SIZE));
   const current = Math.min(page, pageCount);
   const pageFoods = visible.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE);
@@ -60,6 +76,12 @@ export function FoodBrowser({
   function goTo(n: number) {
     setPage(n);
     top.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function changeFady(ids: number[]) {
+    setFadyIds(ids);
+    setPage(1);
+    startTransition(() => router.replace(buildHref(activeCategory, ids), { scroll: false }));
   }
 
   const categoryName = (id: number | null) => categories.find((c) => c.id === id)?.name;
@@ -71,7 +93,7 @@ export function FoodBrowser({
   }
 
   return (
-    <section ref={top} className="scroll-mt-24 space-y-6">
+    <section ref={top} aria-busy={pending} className={`scroll-mt-24 space-y-6 transition-opacity ${pending ? "opacity-60" : ""}`}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <label className="relative flex-1">
           <Search className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-muted" />
@@ -97,13 +119,15 @@ export function FoodBrowser({
       </div>
 
       <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0">
-        <Chip href="/" active={!activeCategory}>Rehetra</Chip>
+        <Chip href={buildHref(undefined, fadyIds)} active={!activeCategory}>Rehetra</Chip>
         {categories.map((c) => (
-          <Chip key={c.id} href={`/?sokajy=${c.id}`} active={activeCategory === c.id}>
+          <Chip key={c.id} href={buildHref(c.id, fadyIds)} active={activeCategory === c.id}>
             {c.name}
           </Chip>
         ))}
       </div>
+
+      <FadyMultiSelect options={fadyList} value={fadyIds} onChange={changeFady} />
 
       <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted">
         <Toggle
@@ -113,18 +137,8 @@ export function FoodBrowser({
             setPage(1);
           }}
         >Ireo tiako ihany</Toggle>
-        <Toggle
-          checked={hideFady}
-          onChange={(v) => {
-            setHideFady(v);
-            setPage(1);
-          }}
-        >
-          Afeno ny fady {fadyCount > 0 && <span className="text-clay">({fadyCount})</span>}
-        </Toggle>
         <span className="ml-auto text-right">
           {visible.length} laoka
-          {hideFady && fadyCount > 0 && <span className="text-clay"> · {fadyCount} afenina (fady)</span>}
         </span>
       </div>
 
@@ -158,11 +172,6 @@ export function FoodBrowser({
                     />
                   )}
                   <HeartButton id={food.id} heart={food.heart} className="absolute top-3 right-3" />
-                  {food.fadyMatches.length > 0 && (
-                    <span className="absolute top-3 left-3 inline-flex items-center gap-1 rounded-full bg-ink/80 px-3 py-1 text-xs font-medium text-rice">
-                      <Ban className="size-3.5" /> Fady: {food.fadyMatches.join(", ")}
-                    </span>
-                  )}
                 </div>
                 <div className="space-y-2 p-5">
                   {categoryName(food.categoryId) && (

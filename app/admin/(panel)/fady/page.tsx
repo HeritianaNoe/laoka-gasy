@@ -1,8 +1,8 @@
 import { FadyAdmin } from "@/components/admin/fady-admin";
-import { requireUser } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth";
 import { getFadyList } from "@/lib/data";
 
 export default async function AdminFadyPage() {
-  const me = await requireUser();
-  return <FadyAdmin list={await getFadyList()} canDelete={me.role === "admin"} />;
+  await requireAdmin(); // admin ihany no mahita sy mitantana ny fady
+  return <FadyAdmin list={await getFadyList()} />;
 }

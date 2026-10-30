@@ -4,9 +4,12 @@ import { useActionState, useEffect, useRef, useState, useTransition } from "reac
 import { Ban, Check, Loader2, Pencil, Plus, Trash2, X } from "lucide-react";
 import type { Fady } from "@prisma/client";
 import { createFady, deleteFady, updateFady } from "@/lib/admin-actions";
+import { Pagination } from "@/components/pagination";
 import { field, IconBtn, primaryBtn, Status } from "./ui";
 
-function FadyRow({ item, canDelete }: { item: Fady; canDelete: boolean }) {
+const PAGE_SIZE = 10;
+
+function FadyRow({ item }: { item: Fady }) {
   const [editing, setEditing] = useState(false);
   const [pending, startTransition] = useTransition();
   const [state, formAction, saving] = useActionState(updateFady.bind(null, item.id), null);
@@ -56,10 +59,9 @@ function FadyRow({ item, canDelete }: { item: Fady; canDelete: boolean }) {
       <IconBtn
         label={`Fafao ${item.name}`}
         danger
-        disabled={pending || !canDelete}
-        hint="Admin ihany no afaka mamafa"
+        disabled={pending}
         onClick={() => {
-          if (!canDelete || !confirm(`Tena hofafana marina ve ny fady "${item.name}"?`)) return;
+          if (!confirm(`Tena hofafana marina ve ny fady "${item.name}"?`)) return;
           startTransition(async () => {
             const r = await deleteFady(item.id);
             if (!r?.ok) alert(r?.message);
@@ -72,9 +74,13 @@ function FadyRow({ item, canDelete }: { item: Fady; canDelete: boolean }) {
   );
 }
 
-export function FadyAdmin({ list, canDelete }: { list: Fady[]; canDelete: boolean }) {
+export function FadyAdmin({ list }: { list: Fady[] }) {
   const ref = useRef<HTMLFormElement>(null);
   const [state, formAction, pending] = useActionState(createFady, null);
+  const [page, setPage] = useState(1);
+  const pageCount = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
+  const current = Math.min(page, pageCount); // raha voafafa ny fady farany amin'ny pejy farany
+  const shown = list.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE);
 
   useEffect(() => {
     if (state?.ok) ref.current?.reset();
@@ -106,11 +112,13 @@ export function FadyAdmin({ list, canDelete }: { list: Fady[]; canDelete: boolea
         </p>
       ) : (
         <ul className="divide-y divide-ink/10 overflow-hidden rounded-3xl border border-ink/10 bg-white/60">
-          {list.map((f) => (
-            <FadyRow key={f.id} item={f} canDelete={canDelete} />
+          {shown.map((f) => (
+            <FadyRow key={f.id} item={f} />
           ))}
         </ul>
       )}
+
+      <Pagination page={current} pageCount={pageCount} onChange={setPage} />
     </section>
   );
 }

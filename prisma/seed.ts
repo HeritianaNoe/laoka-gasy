@@ -13,14 +13,14 @@ async function hashPassword(password: string): Promise<string> {
 }
 
 const categories = [
-  { id: 1, name: "Henakisoa", photo: "/img/laisoa.png" },
-  { id: 2, name: "Henomby", photo: "/img/henomby.png" },
-  { id: 3, name: "Vorona", photo: "/img/vorona.png" },
-  { id: 4, name: "Akoho", photo: "/img/akoho.png" },
-  { id: 5, name: "Hazandrano", photo: "/img/hazandrano.png" },
+  { id: 1, name: "Henakisoa", photo: "/img/laisoa.jpg" },
+  { id: 2, name: "Henomby", photo: "/img/henomby.jpg" },
+  { id: 3, name: "Vorona", photo: "/img/vorona.jpg" },
+  { id: 4, name: "Akoho", photo: "/img/akoho.jpg" },
+  { id: 5, name: "Hazandrano", photo: "/img/hazandrano.jpg" },
   { id: 6, name: "Ondry", photo: "/img/henomby.png" },
-  { id: 7, name: "Sosisy", photo: "/img/tsaramaso.png" },
-  { id: 8, name: "Hafa", photo: "/img/ravitoto.png" },
+  { id: 7, name: "Sosisy", photo: "/img/tsaramaso.jpg" },
+  { id: 8, name: "Hafa", photo: "/img/ravitoto.jpg" },
 ];
 
 const foods = [
@@ -34,21 +34,58 @@ const foods = [
   { name: "Henomby sy ravitoto", description: "Henomby kitoza na henomby matavy nampiarahina tamin'ny ravitoto.", photo: "/img/ravitoto.png", heart: false, rating: 2, categoryId: 2 },
 ];
 
+const fadies = [
+  { name: "Osy" },
+  { name: "Henakisoa" },
+  { name: "Henomby" },
+  { name: "Vorona" },
+  { name: "Akoho" },
+  { name: "Hazandrano" },
+  { name: "Tsaramaso" },
+  { name: "Sakamalao" },
+  { name: "Ravitoto" },
+  { name: "Laisoa" },
+];
+
+const foodswithfadies = [
+  // 1. Henakisoa ravitoto -> Fady Henakisoa (2) & Ravitoto (9)
+  { id_food: 1, id_fady: 2 },
+  { id_food: 1, id_fady: 9 },
+
+  // 2. Henakisoa laisoa -> Fady Henakisoa (2) & Laisoa (10)
+  { id_food: 2, id_fady: 2 },
+  { id_food: 2, id_fady: 10 },
+
+  // 3. Henomby ritra -> Fady Henomby (3)
+  { id_food: 3, id_fady: 3 },
+
+  // 4. Vorona ritra -> Fady Vorona (4)
+  { id_food: 4, id_fady: 4 },
+
+  // 5. Akoho sy sakamalao -> Fady Akoho (5) & Sakamalao (8)
+  { id_food: 5, id_fady: 5 },
+  { id_food: 5, id_fady: 8 },
+
+  // 6. Hazandrano endasina -> Fady Hazandrano (6)
+  { id_food: 6, id_fady: 6 },
+
+  // 7. Tsaramaso sy henakisoa -> Fady Henakisoa (2) & Tsaramaso (7)
+  { id_food: 7, id_fady: 2 },
+  { id_food: 7, id_fady: 7 },
+
+  // 8. Henomby sy ravitoto -> Fady Henomby (3) & Ravitoto (9)
+  { id_food: 8, id_fady: 3 },
+  { id_food: 8, id_fady: 9 },
+];
+
 async function main() {
   // Sokajy: tsy mamerina raha efa misy
   if ((await prisma.category.count()) === 0) {
     await prisma.category.createMany({ data: categories });
-    // Ataon'ny Postgres ny serial: ampifanaraho amin'ny id farany
     await prisma.$executeRaw`SELECT setval(pg_get_serial_sequence('"categories"', 'id'), (SELECT COALESCE(MAX("id"), 1) FROM "categories"))`;
     console.log("Sokajy 8 noforonina.");
   } else {
     console.log("Efa misy sokajy — tsy noforonina indray.");
-  }
-
-  // Fady "Osy"
-  if (!(await prisma.fady.findFirst({ where: { name: "Osy" } }))) {
-    await prisma.fady.create({ data: { name: "Osy" } });
-    console.log("Fady 'Osy' noforonina.");
   }
 
   // Mpampiasa admin default (miditra amin'ny email)
@@ -69,12 +106,27 @@ async function main() {
     console.log("  password: " + password);
   }
 
-  // Laoka: tsy mamerina raha efa misy
   if ((await prisma.food.count()) === 0) {
     await prisma.food.createMany({ data: foods });
+    await prisma.$executeRaw`SELECT setval(pg_get_serial_sequence('"foods"', 'id'), (SELECT COALESCE(MAX("id"), 1) FROM "foods"))`;
     console.log("Laoka 8 noforonina.");
   } else {
     console.log("Efa misy laoka — tsy noforonina indray.");
+  }
+
+  if ((await prisma.fady.count()) === 0) {
+    await prisma.fady.createMany({ data: fadies });
+    await prisma.$executeRaw`SELECT setval(pg_get_serial_sequence('"fady"', 'id'), (SELECT COALESCE(MAX("id"), 1) FROM "fady"))`;
+    console.log("Fady 10 noforonina.");
+  } else {
+    console.log("Efa misy fady — tsy noforonina indray.");
+  }
+  
+  if ((await prisma.foodswithfady.count()) === 0) {
+    await prisma.foodswithfady.createMany({ data: foodswithfadies });
+    console.log("foodswithfadies 10 noforonina.");
+  } else {
+    console.log("Efa misy foodswithfadies — tsy noforonina indray.");
   }
 }
 

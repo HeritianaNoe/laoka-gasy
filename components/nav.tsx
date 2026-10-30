@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Ban, Info, ShieldCheck, LayoutGrid, PlusCircle, UtensilsCrossed } from "lucide-react";
+import { Info, ShieldCheck, LayoutGrid, PlusCircle, UtensilsCrossed } from "lucide-react";
 
 const primary = [
   { href: "/", label: "Laoka", icon: UtensilsCrossed },
@@ -11,7 +11,6 @@ const primary = [
 ];
 
 const secondary = [
-  { href: "/fady", label: "Fady", icon: Ban },
   { href: "/momba", label: "Momba", icon: Info },
   { href: "/admin", label: "Login", icon: ShieldCheck },
 ];

@@ -19,6 +19,11 @@ export async function uploadPhoto(
   return `data:${contentType || "image/jpeg"};base64,${b64}`;
 }
 
+/** Alias used by server actions (same as uploadPhoto with File). */
+export async function toDataUrl(file: File): Promise<string> {
+  return uploadPhoto(file, file.type || "image/jpeg");
+}
+
 /** No-op for data URLs / static paths (kept for API compatibility) */
 export async function deletePhoto(_photo: string | null | undefined) {
   // Photos are stored as data URLs in the row itself — nothing external to delete.

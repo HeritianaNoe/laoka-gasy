@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { uploadPhoto } from "@/lib/storage";
+import * as foodService from "@/lib/services/foods";
 
 export type FormState = { ok: boolean; message: string } | null;
 
@@ -17,6 +18,10 @@ export async function setRating(id: number, rating: number) {
   revalidatePath("/", "layout");
 }
 
+/**
+ * Hampiditra laoka: mamorona automatic ny fady avy amin'ny anarana
+ * (zaraina amin'ny "sy") ary manampy foodswithfady.
+ */
 export async function addFood(_prev: FormState, formData: FormData): Promise<FormState> {
   const name = String(formData.get("name") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
@@ -35,7 +40,15 @@ export async function addFood(_prev: FormState, formData: FormData): Promise<For
     return { ok: false, message: "Tsy nety ny fampiraisana sary. Andramo indray." };
   }
 
-  await prisma.food.create({ data: { name, description, categoryId, photo: photoUrl } });
+  try {
+    // fadyIds = undefined → createFood mamorona/mitady fady avy amin'ny anarana
+    // ary manampy foodswithfady automatic
+    await foodService.createFood({ name, description, categoryId, photo: photoUrl });
+  } catch (e) {
+    console.error("[addFood] create", e);
+    return { ok: false, message: "Tsy nety ny firaketana. Andramo indray." };
+  }
+
   revalidatePath("/", "layout");
   return { ok: true, message: "Voatahiry ny laoka nampidirinao!" };
 }

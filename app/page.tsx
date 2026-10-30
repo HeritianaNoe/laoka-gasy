@@ -1,14 +1,20 @@
 import Image from "next/image";
 import { FoodBrowser } from "@/components/food-browser";
-import { getCategories, getFadyList, getFoods, matchFady } from "@/lib/data";
+import { getCategories, getFadyList } from "@/lib/data";
+import { getFoods, normalizeIds } from "@/lib/foods";
 
 export const dynamic = "force-dynamic";
 
-export default async function Home({ searchParams }: { searchParams: Promise<{ sokajy?: string }> }) {
-  const { sokajy } = await searchParams;
+export default async function Home({ searchParams }: { searchParams: Promise<{ sokajy?: string; fady?: string }> }) {
+  const { sokajy, fady } = await searchParams;
   const categoryId = Number(sokajy) || undefined;
-  const [foods, categories, fadyList] = await Promise.all([getFoods(categoryId), getCategories(), getFadyList()]);
-  const fadyNames = fadyList.map((f) => f.name);
+  // ?fady=1,3 → [1, 3] (valeurs invalides ignorées, aucun fady = aucun filtre)
+  const selectedFady = normalizeIds((fady ?? "").split(",").filter(Boolean).map(Number));
+  const [foods, categories, fadyList] = await Promise.all([
+    getFoods({ categoryId, fadyIds: selectedFady }),
+    getCategories(),
+    getFadyList(),
+  ]);
   const active = categories.find((c) => c.id === categoryId);
 
   return (
@@ -37,9 +43,11 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
       </section>
 
       <FoodBrowser
-        foods={foods.map((f) => ({ ...f, fadyMatches: matchFady(f, fadyNames) }))}
+        foods={foods}
         categories={categories}
         activeCategory={categoryId}
+        fadyList={fadyList}
+        selectedFady={selectedFady}
       />
     </div>
   );
