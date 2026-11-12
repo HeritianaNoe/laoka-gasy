@@ -48,38 +48,22 @@ const fadies = [
 ];
 
 const foodswithfadies = [
-  // 1. Henakisoa ravitoto -> Fady Henakisoa (2) & Ravitoto (9)
   { id_food: 1, id_fady: 2 },
   { id_food: 1, id_fady: 9 },
-
-  // 2. Henakisoa laisoa -> Fady Henakisoa (2) & Laisoa (10)
   { id_food: 2, id_fady: 2 },
   { id_food: 2, id_fady: 10 },
-
-  // 3. Henomby ritra -> Fady Henomby (3)
   { id_food: 3, id_fady: 3 },
-
-  // 4. Vorona ritra -> Fady Vorona (4)
   { id_food: 4, id_fady: 4 },
-
-  // 5. Akoho sy sakamalao -> Fady Akoho (5) & Sakamalao (8)
   { id_food: 5, id_fady: 5 },
   { id_food: 5, id_fady: 8 },
-
-  // 6. Hazandrano endasina -> Fady Hazandrano (6)
   { id_food: 6, id_fady: 6 },
-
-  // 7. Tsaramaso sy henakisoa -> Fady Henakisoa (2) & Tsaramaso (7)
   { id_food: 7, id_fady: 2 },
   { id_food: 7, id_fady: 7 },
-
-  // 8. Henomby sy ravitoto -> Fady Henomby (3) & Ravitoto (9)
   { id_food: 8, id_fady: 3 },
   { id_food: 8, id_fady: 9 },
 ];
 
 async function main() {
-  // Sokajy: tsy mamerina raha efa misy
   if ((await prisma.category.count()) === 0) {
     await prisma.category.createMany({ data: categories });
     await prisma.$executeRaw`SELECT setval(pg_get_serial_sequence('"categories"', 'id'), (SELECT COALESCE(MAX("id"), 1) FROM "categories"))`;
@@ -88,10 +72,14 @@ async function main() {
     console.log("Efa misy sokajy — tsy noforonina indray.");
   }
 
-  // Mpampiasa admin default (miditra amin'ny email)
-  const name = "Heritiana";
-  const email = "rasolomananaheritiana@gmail.com";  
-  const password = "zakaranda";
+  // Maka ny sanda avy amin'ny environment variables miaraka amin'ny sanda tsotra (fallback) raha ilaina
+  const name = process.env.ADMIN_NAME || "Heritiana";
+  const email = process.env.ADMIN_EMAIL;
+  const password = process.env.ADMIN_PASSWORD;
+
+  if (!email || !password) {
+    throw new Error("Tsy voapetraka ao amin'ny environment variables ny ADMIN_EMAIL na ADMIN_PASSWORD.");
+  }
 
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
@@ -103,7 +91,6 @@ async function main() {
     });
     console.log("User par défaut noforonina:", user.name, "(id:", user.id + ")");
     console.log("  email: " + email);
-    console.log("  password: " + password);
   }
 
   if ((await prisma.food.count()) === 0) {
